@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SAC 445 Outing Games</title>
+  <style>
+    :root,[data-theme="light"]{
+      --bg:#f7f6f2;--surface:#f9f8f5;--surface2:#fbfbf9;--border:#d4d1ca;--divider:#dcd9d5;
+      --text:#28251d;--muted:#66645d;--faint:#9a9892;
+      --primary:#01696f;--primary-h:#0c4e54;--primary-hl:#d9eceb;
+      --warn:#da7101;--warn-s:#f8ead8;--err:#a13544;--err-s:#f4dde0;
+      --success:#437a22;--success-s:#e1edd8;
+      --shadow:0 1px 3px rgba(20,18,15,.1);
+      --r-md:.85rem;--r-lg:1.1rem;--r-xl:1.4rem;--r-full:999px;
+      --tr:160ms cubic-bezier(.16,1,.3,1);
+    }
+    [data-theme="dark"]{
+      --bg:#171614;--surface:#1c1b19;--surface2:#23211f;--border:#3b3732;--divider:#302d29;
+      --text:#f0eee8;--muted:#c2beb5;--faint:#8a867f;
+      --primary:#59a8af;--primary-h:#7ec2c8;--primary-hl:#253637;
+      --warn:#ffb457;--warn-s:#392a19;--err:#e07b88;--err-s:#392228;
+      --success:#83b763;--success-s:#253222;
+      --shadow:0 1px 3px rgba(0,0,0,.3);
+    }
+    *,*::before,*::after{box-sizing:border-box}
+    html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+    body{margin:0;min-height:100vh;background:var(--bg);color:var(--text);
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      font-size:clamp(1rem,.95rem + .25vw,1.125rem);line-height:1.5}
+    button,input,select{font:inherit;cursor:pointer}
+    h1,h2,h3{margin:0;line-height:1.1}
+    h1{font-size:clamp(1.5rem,1.2rem + 1.25vw,2rem)}
+    h2{font-size:clamp(1.125rem,1rem + .75vw,1.5rem)}
+    p{margin:0;color:var(--muted)}
+
+    /* ── layout ── */
+    .shell{display:grid;min-height:100vh}
+    .nav{position:sticky;top:0;z-index:30;
+      background:color-mix(in srgb,var(--surface) 92%,transparent);
+      backdrop-filter:blur(14px);border-bottom:1px solid var(--divider)}
+    .nav-inner{display:flex;gap:.5rem;align-items:center;padding:.75rem 1rem;overflow-x:auto}
+    .brand{display:flex;align-items:center;gap:.75rem;margin-right:auto;min-width:max-content}
+    .logo{width:2.4rem;height:2.4rem;border-radius:var(--r-md);background:var(--primary);
+      display:grid;place-items:center;color:#fff}
+    .brand-meta strong{display:block;font-size:.875rem}
+    .brand-meta span{display:block;font-size:.75rem;color:var(--muted)}
+    .chip,.icon-btn{border:1px solid var(--border);background:var(--surface2);color:var(--text);
+      padding:.75rem 1rem;border-radius:var(--r-full);min-height:44px;min-width:44px;
+      transition:all var(--tr);white-space:nowrap}
+    .chip.active,.chip:hover,.icon-btn:hover{background:var(--primary-hl);border-color:transparent}
+    .main{padding:1rem}
+    .view{display:none;max-width:1300px;margin:0 auto}
+    .view.active{display:block}
+
+    /* ── cards / panels ── */
+    .panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);
+      padding:1.25rem;box-shadow:var(--shadow)}
+    .grid-2{display:grid;gap:1rem;grid-template-columns:1fr}
+    .grid-4{display:grid;gap:1rem;grid-template-columns:repeat(2,1fr)}
+    .station-grid{display:grid;gap:1rem;grid-template-columns:1fr}
+
+    /* ── typography helpers ── */
+    .eyebrow{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+    .pill{display:inline-flex;align-items:center;gap:.5rem;border-radius:var(--r-full);
+      background:var(--primary-hl);color:var(--primary);padding:.4rem .8rem;font-size:.75rem;font-weight:700}
+    .tag{display:inline-block;padding:.25rem .65rem;border-radius:var(--r-full);font-size:.7rem;font-weight:700}
+    .tag-timer{background:var(--warn-s);color:var(--warn)}
+    .tag-count{background:var(--success-s);color:var(--success)}
+    .tag-finale{background:var(--primary-hl);color:var(--primary)}
+
+    /* ── buttons ── */
+    .btn{border:1px solid transparent;border-radius:var(--r-full);min-height:44px;
+      padding:.8rem 1.1rem;background:var(--surface2);color:var(--text);transition:all var(--tr)}
+    .btn:hover{transform:translateY(-1px)}
+    .btn-primary{background:var(--primary);color:#fff}
+    .btn-primary:hover{background:var(--primary-h)}
+    .btn-soft{border-color:var(--border)}
+    .btn-warn{background:var(--warn-s);color:var(--warn)}
+    .btn-success{background:var(--success-s);color:var(--success)}
+    .btn-danger{background:var(--err-s);color:var(--err)}
+    .btn-row{display:flex;flex-wrap:wrap;gap:.75rem}
+
+    /* ── forms ── */
+    .field-grid{display:grid;gap:.75rem;grid-template-columns:repeat(2,1fr)}
+    .field{display:grid;gap:.4rem}
+    .field.full{grid-column:1/-1}
+    label{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+    select,input[type="number"],input[type="text"]{
+      width:100%;min-height:48px;border-radius:var(--r-md);border:1px solid var(--border);
+      background:var(--surface2);padding:.75rem .9rem;color:var(--text)}
+
+    /* ── stopwatch ── */
+    .sw-wrap{display:grid;gap:1rem}
+    .sw-display{font-size:clamp(2.8rem,10vw,5rem);font-weight:900;font-variant-numeric:tabular-nums;
+      letter-spacing:.05em;line-height:1}
+    .sw-team-label{font-size:.8rem;color:var(--muted)}
+    .sw-saved{background:var(--success-s);color:var(--success);border-radius:var(--r-lg);
+      padding:.75rem;font-size:.875rem;display:none}
+    .sw-saved.show{display:block}
+
+    /* ── kpi ── */
+    .kpi-grid{display:grid;gap:1rem;grid-template-columns:repeat(2,1fr)}
+    .kpi{padding:1rem;border-radius:var(--r-lg);background:var(--surface2);border:1px solid var(--divider)}
+    .kpi-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+    .kpi-value{margin-top:.4rem;font-size:1.8rem;font-weight:800;font-variant-numeric:tabular-nums}
+
+    /* ── leaderboard ── */
+    .lboard{display:grid;gap:.75rem}
+    .lrow{display:grid;grid-template-columns:auto 1fr auto;gap:.75rem;align-items:center;
+      padding:1rem;border:1px solid var(--divider);border-radius:var(--r-lg);background:var(--surface2)}
+    .lrow.gold{border-color:#f0c040;background:color-mix(in srgb,#f0c04020,var(--surface2))}
+    .rank{width:2.2rem;height:2.2rem;border-radius:50%;background:var(--primary-hl);
+      display:grid;place-items:center;font-weight:800;color:var(--primary)}
+    .rank.r1{background:#f0c040;color:#5a3d00}
+    .rank.r2{background:#c0c0c0;color:#2a2a2a}
+    .rank.r3{background:#cd7f32;color:#fff}
+    .team-name{font-weight:700}
+    .team-meta{font-size:.75rem;color:var(--muted);margin-top:.2rem}
+    .team-pts{font-weight:900;font-size:1.5rem;font-variant-numeric:tabular-nums}
+
+    /* ── station breakdown table ── */
+    .breakdown{width:100%;border-collapse:collapse;font-size:.875rem}
+    .breakdown th{text-align:left;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;
+      color:var(--muted);padding:.5rem .75rem;border-bottom:1px solid var(--divider)}
+    .breakdown td{padding:.6rem .75rem;border-bottom:1px solid var(--divider)}
+    .breakdown tr:last-child td{border-bottom:none}
+    .time-cell{font-variant-numeric:tabular-nums;font-weight:600}
+
+    /* ── projector ── */
+    .proj-shell{display:grid;gap:1.5rem}
+    .proj-header{display:grid;gap:1rem;padding:1.5rem;border-radius:var(--r-xl);
+      background:var(--surface);border:1px solid var(--border)}
+    .proj-title{font-size:clamp(2rem,4vw,3.2rem);font-weight:900}
+    .proj-timer{font-size:clamp(3rem,10vw,6rem);font-weight:900;font-variant-numeric:tabular-nums}
+    .proj-list{display:grid;gap:1rem}
+    .proj-row{display:grid;grid-template-columns:auto 1fr auto;gap:1rem;align-items:center;
+      padding:1.25rem;border-radius:var(--r-xl);background:var(--surface);border:1px solid var(--border)}
+    .proj-row .rank{width:3.2rem;height:3.2rem;font-size:1.2rem}
+    .proj-row .team-name{font-size:clamp(1.2rem,2.5vw,2rem)}
+    .proj-row .team-meta{font-size:.9rem}
+    .proj-row .team-pts{font-size:clamp(2rem,4vw,3.5rem)}
+
+    /* ── log ── */
+    .log-list{display:grid;gap:.75rem}
+    .log-item{border:1px solid var(--divider);border-radius:var(--r-lg);padding:1rem;background:var(--surface2)}
+    .log-row{display:flex;justify-content:space-between;gap:.75rem;font-size:.875rem}
+
+    /* ── finale ── */
+    .finale-cards{display:grid;gap:1rem;grid-template-columns:repeat(2,1fr)}
+    .finale-card{padding:1.25rem;border-radius:var(--r-xl);border:2px solid var(--divider);
+      background:var(--surface2);cursor:pointer;transition:all var(--tr);text-align:center}
+    .finale-card:hover{border-color:var(--primary)}
+    .finale-card.winner{border-color:#f0c040;background:color-mix(in srgb,#f0c04018,var(--surface2))}
+    .finale-card .team-nm{font-weight:800;font-size:1.1rem}
+    .finale-card .pts-badge{margin-top:.5rem;font-size:1.5rem;font-weight:900;color:var(--primary)}
+
+    .footer{text-align:center;color:var(--faint);font-size:.75rem;padding:2rem 0}
+    .note{font-size:.875rem;color:var(--muted)}
+    .alert{padding:.75rem 1rem;border-radius:var(--r-md);font-size:.875rem}
+    .alert-warn{background:var(--warn-s);color:var(--warn)}
+    .alert-success{background:var(--success-s);color:var(--success)}
+
+    @media(min-width:720px){
+      .main{padding:1.5rem}
+      .grid-2{grid-template-columns:1.1fr .9fr}
+      .grid-4{grid-template-columns:repeat(4,1fr)}
+      .station-grid{grid-template-columns:repeat(2,1fr)}
+      .proj-header{grid-template-columns:1.2fr .8fr}
+      .finale-cards{grid-template-columns:repeat(4,1fr)}
+    }
+    @media(min-width:1040px){
+      .shell{grid-template-columns:280px 1fr}
+      .nav{position:sticky;top:0;align-self:start;min-height:100vh;
+        border-right:1px solid var(--divider);border-bottom:none}
+      .nav-inner{flex-direction:column;align-items:stretch;padding:1.25rem;
+        overflow:visible;min-height:100vh}
+      .brand{margin-right:0}
+      .main{padding:2rem}
+      .grid-4{grid-template-columns:repeat(4,1fr)}
+    }
+    @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+  </style>
+</head>
+<body>
+<div class="shell">
+  <!-- ── Navigation ── -->
+  <aside class="nav" aria-label="Navigation">
+    <div class="nav-inner">
+      <div class="brand">
+        <div class="logo">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M4 6.5 12 3l8 3.5V17L12 21 4 17V6.5Z" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M12 3v18M4 6.5 12 10l8-3.5" stroke="currentColor" stroke-width="1.4"/>
+          </svg>
+        </div>
+        <div class="brand-meta">
+          <strong>SAC 445 Games</strong>
+          <span id="connectionStatus">Connecting…</span>
+        </div>
+      </div>
+      <button class="chip active" data-v="dashboard">Dashboard</button>
+      <button class="chip" data-v="s1">Station 1 · Lord's Prayer</button>
+      <button class="chip" data-v="s2">Station 2 · False Witness</button>
+      <button class="chip" data-v="s3">Station 3 · Cups</button>
+      <button class="chip" data-v="s4">Station 4 · Commandments</button>
+      <button class="chip" data-v="finale">Finale</button>
+      <button class="chip" data-v="projector">Projector</button>
+      <button class="icon-btn" id="themeBtn" aria-label="Toggle theme">◐</button>
+    </div>
+  </aside>
+
+  <!-- ── Main ── -->
+  <main class="main">
+
+    <!-- DASHBOARD -->
+    <section class="view active" id="v-dashboard">
+      <div class="grid-2" style="margin-bottom:1rem">
+        <article class="panel">
+          <div class="eyebrow">Event Overview</div>
+          <h1>SAC 445 Outing Games</h1>
+          <p style="margin-top:.5rem">Scores sync live via Firebase. Each stationmaster opens their station tab on mobile. Open Projector on the venue screen.</p>
+          <div class="btn-row" style="margin-top:1rem">
+            <button class="btn btn-danger" id="btnResetAll">Reset all data</button>
+            <button class="btn btn-soft" id="btnCopyProj">Copy projector link</button>
+          </div>
+          <div class="alert alert-warn" id="alertConfig" style="margin-top:.75rem">
+            ⚠️ Firebase not configured. Open <code>index.html</code> and paste your <code>firebaseConfig</code>.
+          </div>
+        </article>
+        <article class="panel" style="background:linear-gradient(135deg,var(--primary-hl),var(--surface2))">
+          <div class="eyebrow">Global timer (optional)</div>
+          <div class="sw-display" id="globalClock">00:00</div>
+          <p class="note">Use for overall event timing. Each station has its own stopwatch.</p>
+          <div class="btn-row" style="margin-top:.75rem">
+            <button class="btn btn-primary" id="gStart">Start</button>
+            <button class="btn btn-soft" id="gPause">Pause</button>
+            <button class="btn btn-warn" id="gReset">Reset</button>
+            <button class="btn btn-soft" id="gPlus">+1 min</button>
+          </div>
+        </article>
+      </div>
+
+      <!-- summary row -->
+      <div class="grid-4" id="summaryCards" style="margin-bottom:1rem"></div>
+
+      <!-- station breakdown -->
+      <article class="panel" style="margin-bottom:1rem;overflow-x:auto">
+        <div class="eyebrow">Station breakdown</div>
+        <h2>All team times &amp; points</h2>
+        <table class="breakdown" id="breakdownTable"><tbody></tbody></table>
+      </article>
+
+      <!-- leaderboard -->
+      <article class="panel" style="margin-bottom:1rem">
+        <div class="eyebrow">Live leaderboard</div>
+        <h2>Overall standings</h2>
+        <div class="lboard" id="dashLeader"></div>
+      </article>
+
+      <!-- log -->
+      <article class="panel">
+        <div class="eyebrow">Activity log</div>
+        <h2>Recent updates</h2>
+        <div class="log-list" id="logList"></div>
+      </article>
+    </section>
+
+    <!-- STATION 1 -->
+    <section class="view" id="v-s1">
+      <div class="station-grid" id="sg-s1"></div>
+    </section>
+
+    <!-- STATION 2 -->
+    <section class="view" id="v-s2">
+      <div class="station-grid" id="sg-s2"></div>
+    </section>
+
+    <!-- STATION 3 -->
+    <section class="view" id="v-s3">
+      <div class="station-grid" id="sg-s3"></div>
+    </section>
+
+    <!-- STATION 4 -->
+    <section class="view" id="v-s4">
+      <div class="station-grid" id="sg-s4"></div>
+    </section>
+
+    <!-- FINALE -->
+    <section class="view" id="v-finale">
+      <article class="panel">
+        <div class="eyebrow">Finale · Morse Code / Emoji Cipher</div>
+        <h1>Pick the winning team</h1>
+        <p style="margin-top:.5rem">The team that first deciphers the code and reads Jeremiah 29:13 gets <strong>+40 points</strong>.</p>
+        <div class="finale-cards" id="finaleCards" style="margin-top:1.25rem"></div>
+        <div class="btn-row" style="margin-top:1rem">
+          <button class="btn btn-danger btn-soft" id="btnClearFinale">Clear finale winner</button>
+        </div>
+      </article>
+    </section>
+
+    <!-- PROJECTOR -->
+    <section class="view" id="v-projector">
+      <div class="proj-shell">
+        <div class="proj-header">
+          <div>
+            <div class="eyebrow">Venue screen</div>
+            <div class="proj-title">SAC 445 — Live Scores</div>
+            <p>Show this full-screen on the projector.</p>
+          </div>
+          <div>
+            <div class="eyebrow">Global timer</div>
+            <div class="proj-timer" id="projClock">00:00</div>
+          </div>
+        </div>
+        <div class="proj-list" id="projList"></div>
+      </div>
+    </section>
+
+    <div class="footer">SAC 445 Outing Games · Firebase + Firestore</div>
+  </main>
+</div>
+
+<!-- ═══ Firebase SDK (modular CDN) ═══ -->
+<script type="module">
+import { initializeApp }       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc }
+                                from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// ────────────────────────────────────────────────────────────────────────────
+// 🔧  PASTE YOUR FIREBASE CONFIG HERE
+// ────────────────────────────────────────────────────────────────────────────
+const firebaseConfig = {
+  apiKey:            "PASTE_YOUR_API_KEY",
+  authDomain:        "PASTE_YOUR_AUTH_DOMAIN",
+  projectId:         "PASTE_YOUR_PROJECT_ID",
+  storageBucket:     "PASTE_YOUR_STORAGE_BUCKET",
+  messagingSenderId: "PASTE_YOUR_MESSAGING_SENDER_ID",
+  appId:             "PASTE_YOUR_APP_ID"
+};
+// ────────────────────────────────────────────────────────────────────────────
+
+// ── Station config ──────────────────────────────────────────────────────────
+const STATIONS = [
+  { id:"s1", title:"Station 1", subtitle:"Lord's Prayer", type:"timer",   rankPts:[20,15,10,5] },
+  { id:"s2", title:"Station 2", subtitle:"False Witness",  type:"count",  maxCount:20 },
+  { id:"s3", title:"Station 3", subtitle:"Cups",           type:"timer",  rankPts:[20,15,10,5] },
+  { id:"s4", title:"Station 4", subtitle:"Ten Commandments", type:"timer",rankPts:[20,15,10,5] },
+];
+const FINALE_PTS = 40;
+
+const DEFAULT_TEAMS = [
+  { id:"t1", name:"Team Alpha" },
+  { id:"t2", name:"Team Bravo" },
+  { id:"t3", name:"Team Charlie" },
+  { id:"t4", name:"Team Delta" },
+];
+
+// ── Default Firestore document ───────────────────────────────────────────────
+function makeDefault() {
+  return {
+    teams: DEFAULT_TEAMS.map(t => ({
+      ...t,
+      s1Time: null, s2Correct: null, s3Time: null, s4Time: null,
+      finaleWinner: false
+    })),
+    globalTimer: { elapsedMs:0, running:false, startedAt:null },
+    logs: []
+  };
+}
+
+// ── Firebase init ────────────────────────────────────────────────────────────
+let app, db, docRef;
+let state = makeDefault();
+let configured = false;
+
+if (firebaseConfig.apiKey !== "PASTE_YOUR_API_KEY") {
+  app    = initializeApp(firebaseConfig);
+  db     = getFirestore(app);
+  docRef = doc(db, "sac445", "event");
+  configured = true;
+  document.getElementById("alertConfig").style.display = "none";
+  document.getElementById("connectionStatus").textContent = "Live";
+} else {
+  document.getElementById("connectionStatus").textContent = "Not configured";
+}
+
+// ── Scoring helpers ──────────────────────────────────────────────────────────
+function rankPoints(station, teams) {
+  const pts = {};
+  teams.forEach(t => pts[t.id] = 0);
+
+  if (station.type === "timer") {
+    const filed = teams
+      .filter(t => t[`${station.id}Time`] != null)
+      .sort((a,b) => a[`${station.id}Time`] - b[`${station.id}Time`]);
+    filed.forEach((t, i) => { pts[t.id] = station.rankPts[i] ?? 0; });
+
+  } else if (station.type === "count") {
+    teams.forEach(t => {
+      pts[t.id] = t.s2Correct != null ? Math.round(t.s2Correct) : 0;
+    });
+  }
+  return pts;
+}
+
+function computeScores(teams) {
+  const all = {};
+  teams.forEach(t => { all[t.id] = { s1:0, s2:0, s3:0, s4:0, finale:0 }; });
+
+  STATIONS.forEach(s => {
+    const pts = rankPoints(s, teams);
+    const key = s.id;
+    teams.forEach(t => { all[t.id][key] = pts[t.id]; });
+  });
+
+  teams.forEach(t => { all[t.id].finale = t.finaleWinner ? FINALE_PTS : 0; });
+
+  teams.forEach(t => {
+    all[t.id].total =
+      all[t.id].s1 + all[t.id].s2 + all[t.id].s3 + all[t.id].s4 + all[t.id].finale;
+  });
+  return all;
+}
+
+// ── Format helpers ───────────────────────────────────────────────────────────
+function fmtMs(ms) {
+  if (ms == null) return "—";
+  const s = Math.floor(ms / 1000);
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  const tenth = Math.floor((ms % 1000) / 100);
+  return `${String(m).padStart(2,"0")}:${String(sec).padStart(2,"0")}.${tenth}`;
+}
+function fmtClock(ms) {
+  const s = Math.floor(Math.max(0, ms) / 1000);
+  return `${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
+}
+
+// ── Global timer ─────────────────────────────────────────────────────────────
+function getGlobalMs() {
+  const g = state.globalTimer || {};
+  if (!g.running || !g.startedAt) return g.elapsedMs || 0;
+  return (g.elapsedMs || 0) + (Date.now() - g.startedAt);
+}
+
+async function globalTimerOp(op) {
+  if (!configured) return;
+  const snap = await getDoc(docRef);
+  if (snap.exists()) state = snap.data();
+  const g = state.globalTimer || { elapsedMs:0, running:false, startedAt:null };
+  if (op === "start" && !g.running)  { g.running=true;  g.startedAt=Date.now(); }
+  if (op === "pause" && g.running)   { g.elapsedMs=getGlobalMs(); g.running=false; g.startedAt=null; }
+  if (op === "reset")                { g.elapsedMs=0; g.running=false; g.startedAt=null; }
+  if (op === "plus")                 { g.elapsedMs=getGlobalMs()+60000; g.startedAt=g.running?Date.now():null; }
+  state.globalTimer = g;
+  await updateDoc(docRef, { globalTimer: g });
+  addLog("Global timer: " + op);
+}
+
+// ── Log helper ───────────────────────────────────────────────────────────────
+async function addLog(msg) {
+  if (!configured) return;
+  const logs = (state.logs || []).slice(0, 14);
+  logs.unshift({ msg, time: new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}) });
+  state.logs = logs;
+  await updateDoc(docRef, { logs }).catch(()=>{});
+}
+
+// ── Persist state ─────────────────────────────────────────────────────────────
+async function saveState() {
+  if (!configured) return;
+  await setDoc(docRef, state, { merge:true });
+}
+
+// ── Per-station stopwatch state (local, not Firestore) ────────────────────────
+const localSW = {};
+STATIONS.filter(s => s.type === "timer").forEach(s => {
+  localSW[s.id] = { running:false, startMs:0, accumulated:0, intervalId:null };
+});
+
+function swElapsed(sid) {
+  const sw = localSW[sid];
+  if (!sw) return 0;
+  return sw.accumulated + (sw.running ? Date.now() - sw.startMs : 0);
+}
+
+function swStart(sid) {
+  const sw = localSW[sid];
+  if (sw.running) return;
+  sw.running  = true;
+  sw.startMs  = Date.now();
+  sw.intervalId = setInterval(() => {
+    const el = document.getElementById(`sw-${sid}`);
+    if (el) el.textContent = fmtMs(swElapsed(sid));
+  }, 100);
+}
+
+function swPause(sid) {
+  const sw = localSW[sid];
+  if (!sw.running) return;
+  sw.accumulated += Date.now() - sw.startMs;
+  sw.running = false;
+  clearInterval(sw.intervalId);
+}
+
+function swReset(sid) {
+  const sw = localSW[sid];
+  clearInterval(sw.intervalId);
+  sw.running = false;
+  sw.accumulated = 0;
+  sw.startMs = 0;
+  const el = document.getElementById(`sw-${sid}`);
+  if (el) el.textContent = "00:00.0";
+}
+
+// ── Render: station view (timer) ──────────────────────────────────────────────
+function renderTimerStation(station) {
+  const wrap = document.getElementById(`sg-${station.id}`);
+  if (!wrap) return;
+  const scores = computeScores(state.teams || []);
+  const teams  = state.teams || [];
+  const sw     = localSW[station.id];
+  const timeKey = `${station.id}Time`;
+
+  wrap.innerHTML = `
+    <article class="panel">
+      <div class="pill">${station.title}</div>
+      <h1 style="margin-top:.75rem">${station.subtitle}</h1>
+      <div class="tag tag-timer" style="margin-top:.4rem">Timed · Fastest = 20 pts, then 15 / 10 / 5</div>
+
+      <div class="sw-wrap" style="margin-top:1.25rem">
+        <div>
+          <div class="eyebrow">Stopwatch</div>
+          <div class="sw-display" id="sw-${station.id}">${fmtMs(sw ? sw.accumulated : 0)}</div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="sw-start-${station.id}">▶ Start</button>
+          <button class="btn btn-soft"    id="sw-pause-${station.id}">⏸ Pause</button>
+          <button class="btn btn-warn"    id="sw-reset-${station.id}">↺ Reset</button>
+        </div>
+      </div>
+
+      <div class="field-grid" style="margin-top:1.25rem">
+        <div class="field full">
+          <label>Team to save time for</label>
+          <select id="sw-team-${station.id}">
+            ${teams.map(t => `<option value="${t.id}">${t.name}</option>`).join("")}
+          </select>
+        </div>
+      </div>
+      <div class="btn-row" style="margin-top:.75rem">
+        <button class="btn btn-success" id="sw-save-${station.id}">Save time for team</button>
+        <button class="btn btn-danger btn-soft" id="sw-clear-${station.id}">Clear team's time</button>
+      </div>
+      <div class="sw-saved" id="sw-msg-${station.id}"></div>
+    </article>
+
+    <article class="panel">
+      <div class="eyebrow">Current rankings · ${station.title}</div>
+      <h2>${station.subtitle} leaderboard</h2>
+      <div class="lboard" style="margin-top:.75rem">
+        ${teams.slice().sort((a,b)=>{
+          const at=a[timeKey], bt=b[timeKey];
+          if(at==null && bt==null) return 0;
+          if(at==null) return 1;
+          if(bt==null) return -1;
+          return at - bt;
+        }).map((t,i)=>{
+          const time  = t[timeKey];
+          const pts   = scores[t.id]?.[station.id] ?? 0;
+          const rankC = i===0?"r1":i===1?"r2":i===2?"r3":"";
+          return `
+          <div class="lrow ${i===0?"gold":""}">
+            <div class="rank ${rankC}">${i+1}</div>
+            <div>
+              <div class="team-name">${t.name}</div>
+              <div class="team-meta time-cell">${time!=null ? fmtMs(time) : "Not recorded"}</div>
+            </div>
+            <div class="team-pts">${pts > 0 ? pts+" pts" : "—"}</div>
+          </div>`;
+        }).join("")}
+      </div>
+    </article>
+  `;
+
+  // bind stopwatch buttons
+  document.getElementById(`sw-start-${station.id}`).onclick = () => swStart(station.id);
+  document.getElementById(`sw-pause-${station.id}`).onclick = () => swPause(station.id);
+  document.getElementById(`sw-reset-${station.id}`).onclick = () => swReset(station.id);
+
+  document.getElementById(`sw-save-${station.id}`).onclick = async () => {
+    const teamId  = document.getElementById(`sw-team-${station.id}`).value;
+    const elapsed = swElapsed(station.id);
+    swPause(station.id);
+    const team = (state.teams||[]).find(t=>t.id===teamId);
+    if (!team || elapsed === 0) return;
+    team[timeKey] = elapsed;
+    await saveState();
+    addLog(`${team.name} time at ${station.title}: ${fmtMs(elapsed)}`);
+    const msg = document.getElementById(`sw-msg-${station.id}`);
+    if (msg) { msg.textContent = `Saved ${team.name}: ${fmtMs(elapsed)}`; msg.classList.add("show"); }
+  };
+
+  document.getElementById(`sw-clear-${station.id}`).onclick = async () => {
+    const teamId = document.getElementById(`sw-team-${station.id}`).value;
+    const team   = (state.teams||[]).find(t=>t.id===teamId);
+    if (!team) return;
+    team[timeKey] = null;
+    await saveState();
+    addLog(`Cleared time for ${team.name} at ${station.title}`);
+  };
+}
+
+// ── Render: station 2 (count) ─────────────────────────────────────────────────
+function renderCountStation() {
+  const station = STATIONS[1];
+  const wrap    = document.getElementById("sg-s2");
+  if (!wrap) return;
+  const teams  = state.teams || [];
+  const scores = computeScores(teams);
+
+  wrap.innerHTML = `
+    <article class="panel">
+      <div class="pill">${station.title}</div>
+      <h1 style="margin-top:.75rem">${station.subtitle}</h1>
+      <div class="tag tag-count" style="margin-top:.4rem">Count · Points = number of correct answers (max 20)</div>
+      <p style="margin-top:.75rem">Work through the True/False worksheet. Count correct answers and save for each team.</p>
+
+      <div class="field-grid" style="margin-top:1.25rem">
+        <div class="field full">
+          <label>Team</label>
+          <select id="count-team">
+            ${teams.map(t=>`<option value="${t.id}">${t.name}</option>`).join("")}
+          </select>
+        </div>
+        <div class="field full">
+          <label>Correct answers (0 – 20)</label>
+          <input type="number" id="count-val" min="0" max="20" value="0" />
+        </div>
+      </div>
+      <div class="btn-row" style="margin-top:.75rem">
+        <button class="btn btn-success" id="count-save">Save score</button>
+        <button class="btn btn-danger btn-soft" id="count-clear">Clear team's score</button>
+      </div>
+      <div class="sw-saved" id="count-msg"></div>
+    </article>
+
+    <article class="panel">
+      <div class="eyebrow">Current scores · Station 2</div>
+      <h2>False Witness leaderboard</h2>
+      <div class="lboard" style="margin-top:.75rem">
+        ${teams.slice().sort((a,b)=>(b.s2Correct??-1)-(a.s2Correct??-1)).map((t,i)=>{
+          const pts = scores[t.id]?.s2 ?? 0;
+          const rankC = i===0?"r1":i===1?"r2":i===2?"r3":"";
+          return `
+          <div class="lrow ${i===0?"gold":""}">
+            <div class="rank ${rankC}">${i+1}</div>
+            <div>
+              <div class="team-name">${t.name}</div>
+              <div class="team-meta">${t.s2Correct!=null ? t.s2Correct+" / 20 correct" : "Not recorded"}</div>
+            </div>
+            <div class="team-pts">${pts > 0 ? pts+" pts" : "—"}</div>
+          </div>`;
+        }).join("")}
+      </div>
+    </article>
+  `;
+
+  document.getElementById("count-save").onclick = async () => {
+    const teamId = document.getElementById("count-team").value;
+    const val    = Number(document.getElementById("count-val").value || 0);
+    const team   = (state.teams||[]).find(t=>t.id===teamId);
+    if (!team) return;
+    team.s2Correct = Math.min(20, Math.max(0, val));
+    await saveState();
+    addLog(`${team.name}: ${team.s2Correct}/20 at Station 2`);
+    const msg = document.getElementById("count-msg");
+    if (msg) { msg.textContent = `Saved ${team.name}: ${team.s2Correct} pts`; msg.classList.add("show"); }
+  };
+
+  document.getElementById("count-clear").onclick = async () => {
+    const teamId = document.getElementById("count-team").value;
+    const team   = (state.teams||[]).find(t=>t.id===teamId);
+    if (!team) return;
+    team.s2Correct = null;
+    await saveState();
+    addLog(`Cleared Station 2 score for ${team.name}`);
+  };
+}
+
+// ── Render: finale ────────────────────────────────────────────────────────────
+function renderFinale() {
+  const teams = state.teams || [];
+  const el = document.getElementById("finaleCards");
+  if (!el) return;
+  el.innerHTML = teams.map(t => `
+    <div class="finale-card ${t.finaleWinner?"winner":""}" data-tid="${t.id}">
+      <div class="team-nm">${t.name}</div>
+      <div class="pts-badge">${t.finaleWinner ? "+"+FINALE_PTS+" pts 🏆" : "—"}</div>
+    </div>
+  `).join("");
+
+  el.querySelectorAll(".finale-card").forEach(card => {
+    card.onclick = async () => {
+      const tid = card.dataset.tid;
+      (state.teams||[]).forEach(t => { t.finaleWinner = t.id === tid; });
+      await saveState();
+      addLog(`Finale winner: ${(state.teams||[]).find(t=>t.id===tid)?.name}`);
+    };
+  });
+}
+
+// ── Render: leaderboard ───────────────────────────────────────────────────────
+function renderLeaderboard(containerId, teams, scores, projector=false) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  const sorted = [...teams].sort((a,b)=>scores[b.id].total - scores[a.id].total);
+  el.innerHTML = sorted.map((t,i) => {
+    const s = scores[t.id];
+    const rankC = i===0?"r1":i===1?"r2":i===2?"r3":"";
+    return projector ? `
+      <div class="proj-row ${i===0?"gold":""}">
+        <div class="rank ${rankC}">${i+1}</div>
+        <div>
+          <div class="team-name">${t.name}</div>
+          <div class="team-meta">S1 ${s.s1} · S2 ${s.s2} · S3 ${s.s3} · S4 ${s.s4} · Finale ${s.finale}</div>
+        </div>
+        <div class="team-pts">${s.total}</div>
+      </div>` : `
+      <div class="lrow ${i===0?"gold":""}">
+        <div class="rank ${rankC}">${i+1}</div>
+        <div>
+          <div class="team-name">${t.name}</div>
+          <div class="team-meta">S1 ${s.s1} · S2 ${s.s2} · S3 ${s.s3} · S4 ${s.s4} · Finale ${s.finale}</div>
+        </div>
+        <div class="team-pts">${s.total}</div>
+      </div>`;
+  }).join("");
+}
+
+// ── Render: breakdown table ───────────────────────────────────────────────────
+function renderBreakdown(teams, scores) {
+  const el = document.querySelector("#breakdownTable tbody");
+  if (!el) return;
+  const sorted = [...teams].sort((a,b)=>scores[b.id].total-scores[a.id].total);
+  el.innerHTML = `
+    <tr>
+      <th>Team</th>
+      <th>S1 Time</th><th>S1 Pts</th>
+      <th>S2 Correct</th><th>S2 Pts</th>
+      <th>S3 Time</th><th>S3 Pts</th>
+      <th>S4 Time</th><th>S4 Pts</th>
+      <th>Finale</th>
+      <th><strong>Total</strong></th>
+    </tr>
+    ${sorted.map(t=>{
+      const s = scores[t.id];
+      return `<tr>
+        <td><strong>${t.name}</strong></td>
+        <td class="time-cell">${fmtMs(t.s1Time)}</td><td>${s.s1||"—"}</td>
+        <td>${t.s2Correct??'—'}</td><td>${s.s2||"—"}</td>
+        <td class="time-cell">${fmtMs(t.s3Time)}</td><td>${s.s3||"—"}</td>
+        <td class="time-cell">${fmtMs(t.s4Time)}</td><td>${s.s4||"—"}</td>
+        <td>${t.finaleWinner?"🏆 +40":"—"}</td>
+        <td><strong>${s.total}</strong></td>
+      </tr>`;
+    }).join("")}
+  `;
+}
+
+// ── Render: summary cards ─────────────────────────────────────────────────────
+function renderSummary(teams, scores) {
+  const el = document.getElementById("summaryCards");
+  if (!el) return;
+  const sorted = [...teams].sort((a,b)=>scores[b.id].total-scores[a.id].total);
+  const leader = sorted[0];
+  const total  = Object.values(scores).reduce((sum,s)=>sum+s.total,0);
+  const cards  = [
+    { label:"Teams",      value: teams.length },
+    { label:"Leader",     value: leader ? leader.name : "—" },
+    { label:"Top score",  value: leader ? scores[leader.id].total : 0 },
+    { label:"Total pts",  value: total },
+  ];
+  el.innerHTML = cards.map(c=>`
+    <article class="panel">
+      <div class="kpi-label">${c.label}</div>
+      <div class="kpi-value">${c.value}</div>
+    </article>`).join("");
+}
+
+// ── Render: log ───────────────────────────────────────────────────────────────
+function renderLog() {
+  const el = document.getElementById("logList");
+  if (!el) return;
+  const logs = state.logs || [];
+  el.innerHTML = logs.length
+    ? logs.map(l=>`
+        <div class="log-item">
+          <div class="log-row"><strong>${l.msg}</strong><span style="color:var(--muted)">${l.time}</span></div>
+        </div>`).join("")
+    : `<div class="log-item" style="color:var(--muted)">No updates yet.</div>`;
+}
+
+// ── Master render ─────────────────────────────────────────────────────────────
+function renderAll() {
+  const teams  = state.teams || [];
+  const scores = computeScores(teams);
+
+  renderSummary(teams, scores);
+  renderBreakdown(teams, scores);
+  renderLeaderboard("dashLeader", teams, scores);
+  renderLeaderboard("projList",   teams, scores, true);
+  renderLog();
+  renderFinale();
+
+  // re-render current station view
+  const activeView = document.querySelector(".view.active");
+  if (activeView) {
+    const vid = activeView.id;
+    STATIONS.filter(s=>s.type==="timer").forEach(s => {
+      if (vid === `v-${s.id}`) renderTimerStation(s);
+    });
+    if (vid === "v-s2") renderCountStation();
+  }
+}
+
+// ── Global clock tick ─────────────────────────────────────────────────────────
+setInterval(() => {
+  const t = fmtClock(getGlobalMs());
+  const gc = document.getElementById("globalClock");
+  const pc = document.getElementById("projClock");
+  if (gc) gc.textContent = t;
+  if (pc) pc.textContent = t;
+}, 500);
+
+// ── Navigation ────────────────────────────────────────────────────────────────
+function setView(vid) {
+  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active", v.id===`v-${vid}`));
+  document.querySelectorAll(".chip").forEach(c=>c.classList.toggle("active", c.dataset.v===vid));
+  location.hash = vid;
+
+  // render station on demand
+  const s = STATIONS.find(s=>s.id===vid);
+  if (s) {
+    if (s.type === "timer") renderTimerStation(s);
+    else if (s.type === "count") renderCountStation();
+  }
+  if (vid === "finale") renderFinale();
+}
+
+document.querySelectorAll(".chip[data-v]").forEach(c=>{
+  c.addEventListener("click", ()=>setView(c.dataset.v));
+});
+
+// ── Global timer buttons ──────────────────────────────────────────────────────
+document.getElementById("gStart").onclick  = ()=>globalTimerOp("start");
+document.getElementById("gPause").onclick  = ()=>globalTimerOp("pause");
+document.getElementById("gReset").onclick  = ()=>globalTimerOp("reset");
+document.getElementById("gPlus").onclick   = ()=>globalTimerOp("plus");
+
+// ── Dashboard buttons ─────────────────────────────────────────────────────────
+document.getElementById("btnResetAll").onclick = async () => {
+  if (!confirm("Reset ALL data? This cannot be undone.")) return;
+  state = makeDefault();
+  await setDoc(docRef, state);
+  addLog("All data reset");
+};
+document.getElementById("btnCopyProj").onclick = () => {
+  navigator.clipboard.writeText(`${location.href.split("#")[0]}#projector`);
+};
+document.getElementById("btnClearFinale").onclick = async () => {
+  (state.teams||[]).forEach(t=>t.finaleWinner=false);
+  await saveState();
+  addLog("Finale winner cleared");
+};
+
+// ── Theme toggle ──────────────────────────────────────────────────────────────
+document.getElementById("themeBtn").onclick = () => {
+  const next = document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";
+  document.documentElement.setAttribute("data-theme", next);
+};
+
+// ── Hash routing ──────────────────────────────────────────────────────────────
+window.addEventListener("hashchange", ()=>{
+  const h = location.hash.replace("#","") || "dashboard";
+  setView(h);
+});
+
+// ── Firestore subscription ────────────────────────────────────────────────────
+if (configured) {
+  onSnapshot(docRef, snap => {
+    if (!snap.exists()) {
+      setDoc(docRef, makeDefault());
+      return;
+    }
+    state = snap.data();
+    renderAll();
+  }, err => {
+    document.getElementById("connectionStatus").textContent = "Error";
+    console.error(err);
+  });
+
+  // bootstrap
+  (async () => {
+    const snap = await getDoc(docRef);
+    if (!snap.exists()) await setDoc(docRef, makeDefault());
+    else state = snap.data();
+    renderAll();
+    const h = location.hash.replace("#","") || "dashboard";
+    setView(h);
+  })();
+} else {
+  // offline demo mode
+  renderAll();
+  const h = location.hash.replace("#","") || "dashboard";
+  setView(h);
+}
+</script>
+</body>
+</html>
