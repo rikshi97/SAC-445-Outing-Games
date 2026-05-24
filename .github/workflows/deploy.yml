@@ -19,21 +19,14 @@ jobs:
         env:
           FIREBASE_CONST: ${{ secrets.FIREBASE_CONST }}
         run: |
-          cat > inject.py << 'PYEOF'
-          import os, re
-          with open("index.html", "r") as f:
-              content = f.read()
-          pattern = re.compile(r'const firebaseConfig\s*=\s*\{.*?\};', re.DOTALL)
-          replacement = os.environ["FIREBASE_CONST"].strip()
-          if not pattern.search(content):
-              print("ERROR: Could not find firebaseConfig placeholder")
-              exit(1)
-          content = pattern.sub(replacement, content, count=1)
-          with open("index.html", "w") as f:
-              f.write(content)
-          print("Firebase config injected successfully.")
-          PYEOF
-          python3 inject.py
+          node -e "
+            const fs = require('fs');
+            let html = fs.readFileSync('index.html', 'utf8');
+            const replacement = process.env.FIREBASE_CONST.trim();
+            html = html.replace(/const firebaseConfig\s*=\s*\{[\s\S]*?\};/, replacement);
+            fs.writeFileSync('index.html', html);
+            console.log('Done.');
+          "
 
       - name: Verify injection
         run: |
