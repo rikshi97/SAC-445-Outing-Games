@@ -19,22 +19,40 @@ jobs:
         env:
           FIREBASE_CONST: ${{ secrets.FIREBASE_CONST }}
         run: |
-          # Replace the placeholder const block with the real secret
-          python3 - <<'EOF'
+          python3 - <<'PYEOF'
 import os, re
 
 with open("index.html", "r") as f:
     content = f.read()
 
-placeholder = r'const firebaseConfig = \{[^}]*\};'
-replacement = os.environ["FIREBASE_CONST"]
-content = re.sub(placeholder, replacement, content, flags=re.DOTALL)
+# Match from 'const firebaseConfig' up to and including the closing '};\'  
+pattern = re.compile(
+    r'const firebaseConfig\s*=\s*\{.*?\}\s*;',
+    re.DOTALL
+)
+
+replacement = os.environ["FIREBASE_CONST"].strip()
+
+if not pattern.search(content):
+    print("ERROR: Could not find firebaseConfig placeholder in index.html")
+    exit(1)
+
+content = pattern.sub(replacement, content, count=1)
 
 with open("index.html", "w") as f:
     f.write(content)
 
 print("Firebase config injected successfully.")
-EOF
+PYEOF
+
+      - name: Verify injection
+        run: |
+          if grep -q "PASTE_YOUR_API_KEY" index.html; then
+            echo "ERROR: Placeholder still present — injection failed"
+            exit 1
+          else
+            echo "Injection verified OK"
+          fi
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
