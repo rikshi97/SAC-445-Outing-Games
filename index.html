@@ -548,7 +548,8 @@ function swSyncBtn(sid) {
 function swStart(sid) {
   const sw = localSW[sid];
   if (sw.running) return;
-  sw.running=true; sw.startMs=Date.now();
+  sw.running = true;
+  sw.startMs = Date.now();
   sw.intervalId = setInterval(() => {
     const el = document.getElementById(`sw-${sid}`);
     if (el) el.textContent = fmtMs(swElapsed(sid));
@@ -558,14 +559,15 @@ function swStart(sid) {
 function swPause(sid) {
   const sw = localSW[sid];
   if (!sw.running) return;
-  sw.accumulated += Date.now()-sw.startMs;
-  sw.running=false; clearInterval(sw.intervalId);
+  sw.accumulated += Date.now() - sw.startMs;
+  sw.running = false;
+  clearInterval(sw.intervalId);
   swSyncBtn(sid);
 }
 function swReset(sid) {
   const sw = localSW[sid];
   clearInterval(sw.intervalId);
-  sw.running=false; sw.accumulated=0; sw.startMs=0;
+  sw.running = false; sw.accumulated = 0; sw.startMs = 0;
   const el = document.getElementById(`sw-${sid}`);
   if (el) el.textContent = "00:00.0";
   swSyncBtn(sid);
@@ -603,101 +605,101 @@ function buildCountLb(teams, scores) {
   }).join("");
 }
 
-// ── Populate team dropdowns once (on init) ───────────────────────────────────
+// ── Populate team dropdowns ────────────────────────────────────────────────────
+// Sets innerHTML WITHOUT triggering change events by using Option objects.
 function populateSelects(teams) {
-  const opts = teams.map(t=>`<option value="${t.id}">${t.name}</option>`).join("");
-  ["sw-team-s1","sw-team-s3","sw-team-s4","count-team"].forEach(id => {
+  const selectIds = ["sw-team-s1", "sw-team-s3", "sw-team-s4", "count-team"];
+  selectIds.forEach(id => {
     const el = document.getElementById(id);
-    if (el && !el.dataset.populated) { el.innerHTML = opts; el.dataset.populated = "1"; }
+    if (!el || el.dataset.populated) return;
+    // Use Option() constructor — does NOT fire change events
+    teams.forEach(t => el.add(new Option(t.name, t.id)));
+    el.dataset.populated = "1";
   });
 }
 
-// ── Wire up station controls (called once on init) ───────────────────────────
+// ── Wire station controls (once, after selects are populated) ──────────────────
 function wireTimerStation(sid) {
-  document.getElementById(`sw-start-${sid}`).onclick = () => swToggle(sid);
-  document.getElementById(`sw-reset-${sid}`).onclick = () => swReset(sid);
-  document.getElementById(`sw-team-${sid}`).onchange = () => swReset(sid);
+  document.getElementById(`sw-start-${sid}`).addEventListener("click", () => swToggle(sid));
+  document.getElementById(`sw-reset-${sid}`).addEventListener("click", () => swReset(sid));
+  // Only reset stopwatch when user manually picks a different team
+  document.getElementById(`sw-team-${sid}`).addEventListener("change", () => swReset(sid));
 
   const timeKey = `${sid}Time`;
-  document.getElementById(`sw-save-${sid}`).onclick = async () => {
+  document.getElementById(`sw-save-${sid}`).addEventListener("click", async () => {
     const teamId  = document.getElementById(`sw-team-${sid}`).value;
     const elapsed = swElapsed(sid);
+    if (!teamId || elapsed === 0) return;
     swPause(sid);
-    const team = (state.teams||[]).find(t=>t.id===teamId);
-    if (!team || elapsed===0) return;
+    const team = (state.teams||[]).find(t => t.id === teamId);
+    if (!team) return;
     team[timeKey] = elapsed;
     await saveState();
     addLog(`${team.name} time at Station ${sid.slice(1)}: ${fmtMs(elapsed)}`);
     const msg = document.getElementById(`sw-msg-${sid}`);
-    if (msg) { msg.textContent=`Saved ${team.name}: ${fmtMs(elapsed)}`; msg.classList.add("show"); }
-  };
-  document.getElementById(`sw-clear-${sid}`).onclick = async () => {
+    if (msg) { msg.textContent = `Saved ${team.name}: ${fmtMs(elapsed)}`; msg.classList.add("show"); }
+  });
+
+  document.getElementById(`sw-clear-${sid}`).addEventListener("click", async () => {
     const teamId = document.getElementById(`sw-team-${sid}`).value;
-    const team   = (state.teams||[]).find(t=>t.id===teamId);
+    const team   = (state.teams||[]).find(t => t.id === teamId);
     if (!team) return;
     team[timeKey] = null;
     await saveState();
     addLog(`Cleared time for ${team.name} at Station ${sid.slice(1)}`);
-  };
+  });
 }
 
 function wireCountStation() {
-  document.getElementById("count-save").onclick = async () => {
+  document.getElementById("count-save").addEventListener("click", async () => {
     const teamId = document.getElementById("count-team").value;
-    const val    = Number(document.getElementById("count-val").value||0);
-    const team   = (state.teams||[]).find(t=>t.id===teamId);
+    const val    = Number(document.getElementById("count-val").value || 0);
+    const team   = (state.teams||[]).find(t => t.id === teamId);
     if (!team) return;
     team.s2Correct = Math.min(20, Math.max(0, val));
     await saveState();
     addLog(`${team.name}: ${team.s2Correct}/20 at Station 2`);
     const msg = document.getElementById("count-msg");
-    if (msg) { msg.textContent=`Saved ${team.name}: ${team.s2Correct} pts`; msg.classList.add("show"); }
-  };
-  document.getElementById("count-clear").onclick = async () => {
+    if (msg) { msg.textContent = `Saved ${team.name}: ${team.s2Correct} pts`; msg.classList.add("show"); }
+  });
+
+  document.getElementById("count-clear").addEventListener("click", async () => {
     const teamId = document.getElementById("count-team").value;
-    const team   = (state.teams||[]).find(t=>t.id===teamId);
+    const team   = (state.teams||[]).find(t => t.id === teamId);
     if (!team) return;
     team.s2Correct = null;
     await saveState();
     addLog(`Cleared Station 2 score for ${team.name}`);
-  };
+  });
 }
 
-// ── renderAll — called on EVERY Firestore snapshot on EVERY device ───────────
-// All lb-sX elements now exist in the static HTML, so this always works
-// regardless of which view the user is currently on.
+// ── renderAll — called on every Firestore snapshot, every device ─────────────────
 function renderAll() {
-  const teams  = state.teams||[];
+  const teams  = state.teams || [];
   const scores = computeScores(teams);
 
-  // Dashboard
   renderSummary(teams, scores);
   renderBreakdown(teams, scores);
   renderLeaderboard("dashLeader", teams, scores, false);
+  renderLeaderboard("projList",   teams, scores, true);
   renderLog();
-
-  // Projector
-  renderLeaderboard("projList", teams, scores, true);
-
-  // Finale cards (re-render without wiping onclick — handled via event delegation)
   renderFinaleCards(teams);
 
-  // Station leaderboards — always present in DOM, always updated
-  const s1 = STATIONS[0], s3 = STATIONS[2], s4 = STATIONS[3];
-  document.getElementById("lb-s1").innerHTML = buildTimerLb(s1, teams, scores);
+  // Station leaderboards — always in DOM, always updated regardless of active view
+  document.getElementById("lb-s1").innerHTML = buildTimerLb(STATIONS[0], teams, scores);
   document.getElementById("lb-s2").innerHTML = buildCountLb(teams, scores);
-  document.getElementById("lb-s3").innerHTML = buildTimerLb(s3, teams, scores);
-  document.getElementById("lb-s4").innerHTML = buildTimerLb(s4, teams, scores);
+  document.getElementById("lb-s3").innerHTML = buildTimerLb(STATIONS[2], teams, scores);
+  document.getElementById("lb-s4").innerHTML = buildTimerLb(STATIONS[3], teams, scores);
 }
 
-// ── Dashboard helpers ─────────────────────────────────────────────────────────
+// ── Dashboard + projector helpers ─────────────────────────────────────────────
 function renderLeaderboard(id, teams, scores, projector) {
   const el = document.getElementById(id);
   if (!el) return;
-  const sorted = [...teams].sort((a,b)=>scores[b.id].total-scores[a.id].total);
+  const sorted = [...teams].sort((a,b) => scores[b.id].total - scores[a.id].total);
   el.innerHTML = sorted.map((t,i) => {
-    const s=scores[t.id], rankC=i===0?"r1":i===1?"r2":i===2?"r3":"";
-    const cls = projector?`proj-row ${i===0?"gold":""}`:`lrow ${i===0?"gold":""}`;
+    const s = scores[t.id], rankC = i===0?"r1":i===1?"r2":i===2?"r3":"";
+    const cls = projector ? `proj-row ${i===0?"gold":""}` : `lrow ${i===0?"gold":""}`;
     return `<div class="${cls}">
       <div class="rank ${rankC}">${i+1}</div>
       <div><div class="team-name">${t.name}</div>
@@ -710,7 +712,7 @@ function renderLeaderboard(id, teams, scores, projector) {
 function renderBreakdown(teams, scores) {
   const el = document.querySelector("#breakdownTable tbody");
   if (!el) return;
-  const sorted = [...teams].sort((a,b)=>scores[b.id].total-scores[a.id].total);
+  const sorted = [...teams].sort((a,b) => scores[b.id].total - scores[a.id].total);
   el.innerHTML = `<tr>
     <th>Team</th><th>S1 Time</th><th>S1 Pts</th>
     <th>S2 Correct</th><th>S2 Pts</th>
@@ -718,7 +720,7 @@ function renderBreakdown(teams, scores) {
     <th>S4 Time</th><th>S4 Pts</th>
     <th>Finale</th><th><strong>Total</strong></th>
   </tr>
-  ${sorted.map(t=>{const s=scores[t.id];return `<tr>
+  ${sorted.map(t => { const s = scores[t.id]; return `<tr>
     <td><strong>${t.name}</strong></td>
     <td class="time-cell">${fmtMs(t.s1Time)}</td><td>${s.s1||"—"}</td>
     <td>${t.s2Correct??"—"}</td><td>${s.s2||"—"}</td>
@@ -726,29 +728,29 @@ function renderBreakdown(teams, scores) {
     <td class="time-cell">${fmtMs(t.s4Time)}</td><td>${s.s4||"—"}</td>
     <td>${t.finaleWinner?"🏆 +40":"—"}</td>
     <td><strong>${s.total}</strong></td>
-  </tr>`;}).join("")}`;
+  </tr>`; }).join("")}`;
 }
 
 function renderSummary(teams, scores) {
   const el = document.getElementById("summaryCards");
   if (!el) return;
-  const sorted = [...teams].sort((a,b)=>scores[b.id].total-scores[a.id].total);
+  const sorted = [...teams].sort((a,b) => scores[b.id].total - scores[a.id].total);
   const leader = sorted[0];
-  const total  = Object.values(scores).reduce((sum,s)=>sum+s.total,0);
+  const total  = Object.values(scores).reduce((sum,s) => sum + s.total, 0);
   el.innerHTML = [
     { label:"Teams",     value: teams.length },
-    { label:"Leader",    value: leader?leader.name:"—" },
-    { label:"Top score", value: leader?scores[leader.id].total:0 },
+    { label:"Leader",    value: leader ? leader.name : "—" },
+    { label:"Top score", value: leader ? scores[leader.id].total : 0 },
     { label:"Total pts", value: total },
-  ].map(c=>`<article class="panel"><div class="eyebrow">${c.label}</div><div style="font-size:1.8rem;font-weight:800;margin-top:.4rem;font-variant-numeric:tabular-nums">${c.value}</div></article>`).join("");
+  ].map(c => `<article class="panel"><div class="eyebrow">${c.label}</div><div style="font-size:1.8rem;font-weight:800;margin-top:.4rem;font-variant-numeric:tabular-nums">${c.value}</div></article>`).join("");
 }
 
 function renderLog() {
   const el = document.getElementById("logList");
   if (!el) return;
-  const logs = state.logs||[];
+  const logs = state.logs || [];
   el.innerHTML = logs.length
-    ? logs.map(l=>`<div class="log-item"><div class="log-row"><strong>${l.msg}</strong><span style="color:var(--muted)">${l.time}</span></div></div>`).join("")
+    ? logs.map(l => `<div class="log-item"><div class="log-row"><strong>${l.msg}</strong><span style="color:var(--muted)">${l.time}</span></div></div>`).join("")
     : `<div class="log-item" style="color:var(--muted)">No updates yet.</div>`;
 }
 
@@ -756,21 +758,20 @@ function renderLog() {
 function renderFinaleCards(teams) {
   const el = document.getElementById("finaleCards");
   if (!el) return;
-  el.innerHTML = teams.map(t=>`
-    <div class="finale-card ${t.finaleWinner?"winner":""}" data-tid="${t.id}">
+  el.innerHTML = teams.map(t => `
+    <div class="finale-card ${t.finaleWinner ? "winner" : ""}" data-tid="${t.id}">
       <div class="team-nm">${t.name}</div>
-      <div class="pts-badge">${t.finaleWinner?"+"+FINALE_PTS+" pts 🏆":"—"}</div>
+      <div class="pts-badge">${t.finaleWinner ? "+" + FINALE_PTS + " pts 🏆" : "—"}</div>
     </div>`).join("");
 }
 
-// Event delegation — survives innerHTML re-renders
 document.getElementById("finaleCards").addEventListener("click", async e => {
   const card = e.target.closest(".finale-card");
   if (!card) return;
   const tid = card.dataset.tid;
-  (state.teams||[]).forEach(t => { t.finaleWinner = t.id===tid; });
+  (state.teams||[]).forEach(t => { t.finaleWinner = t.id === tid; });
   await saveState();
-  addLog(`Finale winner: ${(state.teams||[]).find(t=>t.id===tid)?.name}`);
+  addLog(`Finale winner: ${(state.teams||[]).find(t => t.id === tid)?.name}`);
 });
 
 // ── Clock tick ────────────────────────────────────────────────────────────────
@@ -784,18 +785,18 @@ setInterval(() => {
 
 // ── Navigation ────────────────────────────────────────────────────────────────
 function setView(vid) {
-  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active", v.id===`v-${vid}`));
-  document.querySelectorAll(".chip").forEach(c=>c.classList.toggle("active", c.dataset.v===vid));
+  document.querySelectorAll(".view").forEach(v => v.classList.toggle("active", v.id === `v-${vid}`));
+  document.querySelectorAll(".chip").forEach(c => c.classList.toggle("active", c.dataset.v === vid));
   location.hash = vid;
 }
-document.querySelectorAll(".chip[data-v]").forEach(c=>c.addEventListener("click",()=>setView(c.dataset.v)));
-window.addEventListener("hashchange", () => setView(location.hash.replace("#","")||"dashboard"));
+document.querySelectorAll(".chip[data-v]").forEach(c => c.addEventListener("click", () => setView(c.dataset.v)));
+window.addEventListener("hashchange", () => setView(location.hash.replace("#", "") || "dashboard"));
 
 // ── Buttons ──────────────────────────────────────────────────────────────────
-document.getElementById("gStart").onclick = ()=>globalTimerOp("start");
-document.getElementById("gPause").onclick = ()=>globalTimerOp("pause");
-document.getElementById("gReset").onclick = ()=>globalTimerOp("reset");
-document.getElementById("gPlus").onclick  = ()=>globalTimerOp("plus");
+document.getElementById("gStart").onclick = () => globalTimerOp("start");
+document.getElementById("gPause").onclick = () => globalTimerOp("pause");
+document.getElementById("gReset").onclick = () => globalTimerOp("reset");
+document.getElementById("gPlus").onclick  = () => globalTimerOp("plus");
 
 document.getElementById("btnResetAll").onclick = async () => {
   if (!confirm("Reset ALL data? This cannot be undone.")) return;
@@ -807,12 +808,12 @@ document.getElementById("btnCopyProj").onclick = () => {
   navigator.clipboard.writeText(`${location.href.split("#")[0]}#projector`);
 };
 document.getElementById("btnClearFinale").onclick = async () => {
-  (state.teams||[]).forEach(t=>t.finaleWinner=false);
+  (state.teams||[]).forEach(t => t.finaleWinner = false);
   await saveState();
   addLog("Finale winner cleared");
 };
 document.getElementById("themeBtn").onclick = () => {
-  const next = document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";
+  const next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
   document.documentElement.setAttribute("data-theme", next);
 };
 
@@ -820,7 +821,6 @@ document.getElementById("themeBtn").onclick = () => {
 onSnapshot(docRef, snap => {
   if (!snap.exists()) { setDoc(docRef, makeDefault()); return; }
   state = snap.data();
-  populateSelects(state.teams||[]);
   renderAll();
 }, err => {
   document.getElementById("connectionStatus").textContent = "Error";
@@ -833,16 +833,17 @@ onSnapshot(docRef, snap => {
   if (!snap.exists()) await setDoc(docRef, makeDefault());
   else state = snap.data();
 
-  populateSelects(state.teams||[]);
+  // 1. Populate selects first (uses Option() constructor — no change events fired)
+  populateSelects(state.teams || []);
 
-  // Wire controls once — these never get torn down
+  // 2. Wire controls AFTER selects are populated, so no spurious change fires
   wireTimerStation("s1");
   wireTimerStation("s3");
   wireTimerStation("s4");
   wireCountStation();
 
   renderAll();
-  setView(location.hash.replace("#","")||"dashboard");
+  setView(location.hash.replace("#", "") || "dashboard");
 })();
 </script>
 </body>
