@@ -224,7 +224,7 @@
             <button class="btn btn-danger" id="btnResetAll">Reset all data</button>
             <button class="btn btn-soft" id="btnCopyProj">Copy projector link</button>
           </div>
-          <div class="alert alert-warn" id="alertConfig" style="margin-top:.75rem">
+          <div class="alert alert-warn" id="alertConfig" style="margin-top:.75rem;display:none">
             ⚠️ Firebase not configured. Open <code>index.html</code> and paste your <code>firebaseConfig</code>.
           </div>
         </article>
@@ -327,20 +327,18 @@ import { initializeApp }       from "https://www.gstatic.com/firebasejs/10.12.0/
 import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc }
                                 from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// ────────────────────────────────────────────────────────────────────────────
-// 🔧  PASTE YOUR FIREBASE CONFIG HERE
-// ────────────────────────────────────────────────────────────────────────────
+// ── Firebase config ──────────────────────────────────────────────────────────
 const firebaseConfig = {
-  apiKey:            "PASTE_YOUR_API_KEY",
-  authDomain:        "PASTE_YOUR_AUTH_DOMAIN",
-  projectId:         "PASTE_YOUR_PROJECT_ID",
-  storageBucket:     "PASTE_YOUR_STORAGE_BUCKET",
-  messagingSenderId: "PASTE_YOUR_MESSAGING_SENDER_ID",
-  appId:             "PASTE_YOUR_APP_ID"
+  apiKey: "AIzaSyCFC7xHXD0eGFIlLBjpgiDuWu_K1vZeeXA",
+  authDomain: "sat-445-outing.firebaseapp.com",
+  projectId: "sat-445-outing",
+  storageBucket: "sat-445-outing.firebasestorage.app",
+  messagingSenderId: "983127575591",
+  appId: "1:983127575591:web:a0798ec5df85c75104d202"
 };
-// ────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
 
-// ── Station config ──────────────────────────────────────────────────────────
+// ── Station config ───────────────────────────────────────────────────────────
 const STATIONS = [
   { id:"s1", title:"Station 1", subtitle:"Lord's Prayer", type:"timer",   rankPts:[20,15,10,5] },
   { id:"s2", title:"Station 2", subtitle:"False Witness",  type:"count",  maxCount:20 },
@@ -350,10 +348,10 @@ const STATIONS = [
 const FINALE_PTS = 40;
 
 const DEFAULT_TEAMS = [
-  { id:"t1", name:"Team Alpha" },
-  { id:"t2", name:"Team Bravo" },
-  { id:"t3", name:"Team Charlie" },
-  { id:"t4", name:"Team Delta" },
+  { id:"t1", name:"Matthew" },
+  { id:"t2", name:"Mark" },
+  { id:"t3", name:"Luke" },
+  { id:"t4", name:"John" },
 ];
 
 // ── Default Firestore document ───────────────────────────────────────────────
@@ -369,23 +367,16 @@ function makeDefault() {
   };
 }
 
-// ── Firebase init ────────────────────────────────────────────────────────────
-let app, db, docRef;
-let state = makeDefault();
-let configured = false;
+// ── Firebase init ─────────────────────────────────────────────────────────────
+const app    = initializeApp(firebaseConfig);
+const db     = getFirestore(app);
+const docRef = doc(db, "sac445", "event");
+let state    = makeDefault();
 
-if (firebaseConfig.apiKey !== "PASTE_YOUR_API_KEY") {
-  app    = initializeApp(firebaseConfig);
-  db     = getFirestore(app);
-  docRef = doc(db, "sac445", "event");
-  configured = true;
-  document.getElementById("alertConfig").style.display = "none";
-  document.getElementById("connectionStatus").textContent = "Live";
-} else {
-  document.getElementById("connectionStatus").textContent = "Not configured";
-}
+document.getElementById("alertConfig").style.display = "none";
+document.getElementById("connectionStatus").textContent = "Live";
 
-// ── Scoring helpers ──────────────────────────────────────────────────────────
+// ── Scoring helpers ───────────────────────────────────────────────────────────
 function rankPoints(station, teams) {
   const pts = {};
   teams.forEach(t => pts[t.id] = 0);
@@ -423,7 +414,7 @@ function computeScores(teams) {
   return all;
 }
 
-// ── Format helpers ───────────────────────────────────────────────────────────
+// ── Format helpers ────────────────────────────────────────────────────────────
 function fmtMs(ms) {
   if (ms == null) return "—";
   const s = Math.floor(ms / 1000);
@@ -437,7 +428,7 @@ function fmtClock(ms) {
   return `${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
 }
 
-// ── Global timer ─────────────────────────────────────────────────────────────
+// ── Global timer ──────────────────────────────────────────────────────────────
 function getGlobalMs() {
   const g = state.globalTimer || {};
   if (!g.running || !g.startedAt) return g.elapsedMs || 0;
@@ -445,7 +436,6 @@ function getGlobalMs() {
 }
 
 async function globalTimerOp(op) {
-  if (!configured) return;
   const snap = await getDoc(docRef);
   if (snap.exists()) state = snap.data();
   const g = state.globalTimer || { elapsedMs:0, running:false, startedAt:null };
@@ -458,22 +448,20 @@ async function globalTimerOp(op) {
   addLog("Global timer: " + op);
 }
 
-// ── Log helper ───────────────────────────────────────────────────────────────
+// ── Log helper ────────────────────────────────────────────────────────────────
 async function addLog(msg) {
-  if (!configured) return;
   const logs = (state.logs || []).slice(0, 14);
   logs.unshift({ msg, time: new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}) });
   state.logs = logs;
   await updateDoc(docRef, { logs }).catch(()=>{});
 }
 
-// ── Persist state ─────────────────────────────────────────────────────────────
+// ── Persist state ──────────────────────────────────────────────────────────────
 async function saveState() {
-  if (!configured) return;
   await setDoc(docRef, state, { merge:true });
 }
 
-// ── Per-station stopwatch state (local, not Firestore) ────────────────────────
+// ── Per-station stopwatch state (local, not Firestore) ─────────────────────────
 const localSW = {};
 STATIONS.filter(s => s.type === "timer").forEach(s => {
   localSW[s.id] = { running:false, startMs:0, accumulated:0, intervalId:null };
@@ -514,7 +502,7 @@ function swReset(sid) {
   if (el) el.textContent = "00:00.0";
 }
 
-// ── Render: station view (timer) ──────────────────────────────────────────────
+// ── Render: station view (timer) ───────────────────────────────────────────────
 function renderTimerStation(station) {
   const wrap = document.getElementById(`sg-${station.id}`);
   if (!wrap) return;
@@ -584,7 +572,6 @@ function renderTimerStation(station) {
     </article>
   `;
 
-  // bind stopwatch buttons
   document.getElementById(`sw-start-${station.id}`).onclick = () => swStart(station.id);
   document.getElementById(`sw-pause-${station.id}`).onclick = () => swPause(station.id);
   document.getElementById(`sw-reset-${station.id}`).onclick = () => swReset(station.id);
@@ -612,7 +599,7 @@ function renderTimerStation(station) {
   };
 }
 
-// ── Render: station 2 (count) ─────────────────────────────────────────────────
+// ── Render: station 2 (count) ──────────────────────────────────────────────────
 function renderCountStation() {
   const station = STATIONS[1];
   const wrap    = document.getElementById("sg-s2");
@@ -689,7 +676,7 @@ function renderCountStation() {
   };
 }
 
-// ── Render: finale ────────────────────────────────────────────────────────────
+// ── Render: finale ─────────────────────────────────────────────────────────────
 function renderFinale() {
   const teams = state.teams || [];
   const el = document.getElementById("finaleCards");
@@ -711,7 +698,7 @@ function renderFinale() {
   });
 }
 
-// ── Render: leaderboard ───────────────────────────────────────────────────────
+// ── Render: leaderboard ────────────────────────────────────────────────────────
 function renderLeaderboard(containerId, teams, scores, projector=false) {
   const el = document.getElementById(containerId);
   if (!el) return;
@@ -739,7 +726,7 @@ function renderLeaderboard(containerId, teams, scores, projector=false) {
   }).join("");
 }
 
-// ── Render: breakdown table ───────────────────────────────────────────────────
+// ── Render: breakdown table ────────────────────────────────────────────────────
 function renderBreakdown(teams, scores) {
   const el = document.querySelector("#breakdownTable tbody");
   if (!el) return;
@@ -769,7 +756,7 @@ function renderBreakdown(teams, scores) {
   `;
 }
 
-// ── Render: summary cards ─────────────────────────────────────────────────────
+// ── Render: summary cards ──────────────────────────────────────────────────────
 function renderSummary(teams, scores) {
   const el = document.getElementById("summaryCards");
   if (!el) return;
@@ -789,7 +776,7 @@ function renderSummary(teams, scores) {
     </article>`).join("");
 }
 
-// ── Render: log ───────────────────────────────────────────────────────────────
+// ── Render: log ────────────────────────────────────────────────────────────────
 function renderLog() {
   const el = document.getElementById("logList");
   if (!el) return;
@@ -802,7 +789,7 @@ function renderLog() {
     : `<div class="log-item" style="color:var(--muted)">No updates yet.</div>`;
 }
 
-// ── Master render ─────────────────────────────────────────────────────────────
+// ── Master render ──────────────────────────────────────────────────────────────
 function renderAll() {
   const teams  = state.teams || [];
   const scores = computeScores(teams);
@@ -814,7 +801,6 @@ function renderAll() {
   renderLog();
   renderFinale();
 
-  // re-render current station view
   const activeView = document.querySelector(".view.active");
   if (activeView) {
     const vid = activeView.id;
@@ -825,7 +811,7 @@ function renderAll() {
   }
 }
 
-// ── Global clock tick ─────────────────────────────────────────────────────────
+// ── Global clock tick ──────────────────────────────────────────────────────────
 setInterval(() => {
   const t = fmtClock(getGlobalMs());
   const gc = document.getElementById("globalClock");
@@ -834,13 +820,12 @@ setInterval(() => {
   if (pc) pc.textContent = t;
 }, 500);
 
-// ── Navigation ────────────────────────────────────────────────────────────────
+// ── Navigation ─────────────────────────────────────────────────────────────────
 function setView(vid) {
   document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active", v.id===`v-${vid}`));
   document.querySelectorAll(".chip").forEach(c=>c.classList.toggle("active", c.dataset.v===vid));
   location.hash = vid;
 
-  // render station on demand
   const s = STATIONS.find(s=>s.id===vid);
   if (s) {
     if (s.type === "timer") renderTimerStation(s);
@@ -853,13 +838,13 @@ document.querySelectorAll(".chip[data-v]").forEach(c=>{
   c.addEventListener("click", ()=>setView(c.dataset.v));
 });
 
-// ── Global timer buttons ──────────────────────────────────────────────────────
+// ── Global timer buttons ───────────────────────────────────────────────────────
 document.getElementById("gStart").onclick  = ()=>globalTimerOp("start");
 document.getElementById("gPause").onclick  = ()=>globalTimerOp("pause");
 document.getElementById("gReset").onclick  = ()=>globalTimerOp("reset");
 document.getElementById("gPlus").onclick   = ()=>globalTimerOp("plus");
 
-// ── Dashboard buttons ─────────────────────────────────────────────────────────
+// ── Dashboard buttons ──────────────────────────────────────────────────────────
 document.getElementById("btnResetAll").onclick = async () => {
   if (!confirm("Reset ALL data? This cannot be undone.")) return;
   state = makeDefault();
@@ -875,47 +860,40 @@ document.getElementById("btnClearFinale").onclick = async () => {
   addLog("Finale winner cleared");
 };
 
-// ── Theme toggle ──────────────────────────────────────────────────────────────
+// ── Theme toggle ───────────────────────────────────────────────────────────────
 document.getElementById("themeBtn").onclick = () => {
   const next = document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";
   document.documentElement.setAttribute("data-theme", next);
 };
 
-// ── Hash routing ──────────────────────────────────────────────────────────────
+// ── Hash routing ───────────────────────────────────────────────────────────────
 window.addEventListener("hashchange", ()=>{
   const h = location.hash.replace("#","") || "dashboard";
   setView(h);
 });
 
-// ── Firestore subscription ────────────────────────────────────────────────────
-if (configured) {
-  onSnapshot(docRef, snap => {
-    if (!snap.exists()) {
-      setDoc(docRef, makeDefault());
-      return;
-    }
-    state = snap.data();
-    renderAll();
-  }, err => {
-    document.getElementById("connectionStatus").textContent = "Error";
-    console.error(err);
-  });
+// ── Firestore subscription ─────────────────────────────────────────────────────
+onSnapshot(docRef, snap => {
+  if (!snap.exists()) {
+    setDoc(docRef, makeDefault());
+    return;
+  }
+  state = snap.data();
+  renderAll();
+}, err => {
+  document.getElementById("connectionStatus").textContent = "Error";
+  console.error(err);
+});
 
-  // bootstrap
-  (async () => {
-    const snap = await getDoc(docRef);
-    if (!snap.exists()) await setDoc(docRef, makeDefault());
-    else state = snap.data();
-    renderAll();
-    const h = location.hash.replace("#","") || "dashboard";
-    setView(h);
-  })();
-} else {
-  // offline demo mode
+// bootstrap
+(async () => {
+  const snap = await getDoc(docRef);
+  if (!snap.exists()) await setDoc(docRef, makeDefault());
+  else state = snap.data();
   renderAll();
   const h = location.hash.replace("#","") || "dashboard";
   setView(h);
-}
+})();
 </script>
 </body>
 </html>
