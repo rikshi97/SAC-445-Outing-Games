@@ -225,7 +225,7 @@
             <button class="btn btn-soft" id="btnCopyProj">Copy projector link</button>
           </div>
           <div class="alert alert-warn" id="alertConfig" style="margin-top:.75rem;display:none">
-            ⚠️ Firebase not configured. Open <code>index.html</code> and paste your <code>firebaseConfig</code>.
+            ⚠️ Firebase not configured.
           </div>
         </article>
         <article class="panel" style="background:linear-gradient(135deg,var(--primary-hl),var(--surface2))">
@@ -240,25 +240,17 @@
           </div>
         </article>
       </div>
-
-      <!-- summary row -->
       <div class="grid-4" id="summaryCards" style="margin-bottom:1rem"></div>
-
-      <!-- station breakdown -->
       <article class="panel" style="margin-bottom:1rem;overflow-x:auto">
         <div class="eyebrow">Station breakdown</div>
         <h2>All team times &amp; points</h2>
         <table class="breakdown" id="breakdownTable"><tbody></tbody></table>
       </article>
-
-      <!-- leaderboard -->
       <article class="panel" style="margin-bottom:1rem">
         <div class="eyebrow">Live leaderboard</div>
         <h2>Overall standings</h2>
         <div class="lboard" id="dashLeader"></div>
       </article>
-
-      <!-- log -->
       <article class="panel">
         <div class="eyebrow">Activity log</div>
         <h2>Recent updates</h2>
@@ -267,24 +259,13 @@
     </section>
 
     <!-- STATION 1 -->
-    <section class="view" id="v-s1">
-      <div class="station-grid" id="sg-s1"></div>
-    </section>
-
+    <section class="view" id="v-s1"><div class="station-grid" id="sg-s1"></div></section>
     <!-- STATION 2 -->
-    <section class="view" id="v-s2">
-      <div class="station-grid" id="sg-s2"></div>
-    </section>
-
+    <section class="view" id="v-s2"><div class="station-grid" id="sg-s2"></div></section>
     <!-- STATION 3 -->
-    <section class="view" id="v-s3">
-      <div class="station-grid" id="sg-s3"></div>
-    </section>
-
+    <section class="view" id="v-s3"><div class="station-grid" id="sg-s3"></div></section>
     <!-- STATION 4 -->
-    <section class="view" id="v-s4">
-      <div class="station-grid" id="sg-s4"></div>
-    </section>
+    <section class="view" id="v-s4"><div class="station-grid" id="sg-s4"></div></section>
 
     <!-- FINALE -->
     <section class="view" id="v-finale">
@@ -321,13 +302,11 @@
   </main>
 </div>
 
-<!-- ═══ Firebase SDK (modular CDN) ═══ -->
 <script type="module">
 import { initializeApp }       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc }
                                 from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// ── Firebase config ──────────────────────────────────────────────────────────
 const firebaseConfig = {
   apiKey: "AIzaSyCFC7xHXD0eGFIlLBjpgiDuWu_K1vZeeXA",
   authDomain: "sat-445-outing.firebaseapp.com",
@@ -337,12 +316,11 @@ const firebaseConfig = {
   appId: "1:983127575591:web:a0798ec5df85c75104d202"
 };
 
-// ── Station config ───────────────────────────────────────────────────────────
 const STATIONS = [
-  { id:"s1", title:"Station 1", subtitle:"Lord's Prayer", type:"timer",   rankPts:[20,15,10,5] },
-  { id:"s2", title:"Station 2", subtitle:"False Witness",  type:"count",  maxCount:20 },
-  { id:"s3", title:"Station 3", subtitle:"Cups",           type:"timer",  rankPts:[20,15,10,5] },
-  { id:"s4", title:"Station 4", subtitle:"Ten Commandments", type:"timer",rankPts:[20,15,10,5] },
+  { id:"s1", title:"Station 1", subtitle:"Lord's Prayer",    type:"timer", rankPts:[20,15,10,5] },
+  { id:"s2", title:"Station 2", subtitle:"False Witness",    type:"count", maxCount:20 },
+  { id:"s3", title:"Station 3", subtitle:"Cups",             type:"timer", rankPts:[20,15,10,5] },
+  { id:"s4", title:"Station 4", subtitle:"Ten Commandments", type:"timer", rankPts:[20,15,10,5] },
 ];
 const FINALE_PTS = 40;
 
@@ -355,17 +333,12 @@ const DEFAULT_TEAMS = [
 
 function makeDefault() {
   return {
-    teams: DEFAULT_TEAMS.map(t => ({
-      ...t,
-      s1Time: null, s2Correct: null, s3Time: null, s4Time: null,
-      finaleWinner: false
-    })),
+    teams: DEFAULT_TEAMS.map(t => ({ ...t, s1Time:null, s2Correct:null, s3Time:null, s4Time:null, finaleWinner:false })),
     globalTimer: { elapsedMs:0, running:false, startedAt:null },
     logs: []
   };
 }
 
-// ── Firebase init ─────────────────────────────────────────────────────────────
 const app    = initializeApp(firebaseConfig);
 const db     = getFirestore(app);
 const docRef = doc(db, "sac445", "event");
@@ -374,15 +347,14 @@ let state    = makeDefault();
 document.getElementById("alertConfig").style.display = "none";
 document.getElementById("connectionStatus").textContent = "Live";
 
-// ── Scoring helpers ───────────────────────────────────────────────────────────
+// ── Scoring ──────────────────────────────────────────────────────────────────
 function rankPoints(station, teams) {
   const pts = {};
   teams.forEach(t => pts[t.id] = 0);
   if (station.type === "timer") {
-    const filed = teams
-      .filter(t => t[`${station.id}Time`] != null)
-      .sort((a,b) => a[`${station.id}Time`] - b[`${station.id}Time`]);
-    filed.forEach((t, i) => { pts[t.id] = station.rankPts[i] ?? 0; });
+    teams.filter(t => t[`${station.id}Time`] != null)
+      .sort((a,b) => a[`${station.id}Time`] - b[`${station.id}Time`])
+      .forEach((t,i) => { pts[t.id] = station.rankPts[i] ?? 0; });
   } else if (station.type === "count") {
     teams.forEach(t => { pts[t.id] = t.s2Correct != null ? Math.round(t.s2Correct) : 0; });
   }
@@ -396,24 +368,21 @@ function computeScores(teams) {
     const pts = rankPoints(s, teams);
     teams.forEach(t => { all[t.id][s.id] = pts[t.id]; });
   });
-  teams.forEach(t => { all[t.id].finale = t.finaleWinner ? FINALE_PTS : 0; });
   teams.forEach(t => {
-    all[t.id].total = all[t.id].s1 + all[t.id].s2 + all[t.id].s3 + all[t.id].s4 + all[t.id].finale;
+    all[t.id].finale = t.finaleWinner ? FINALE_PTS : 0;
+    all[t.id].total  = all[t.id].s1 + all[t.id].s2 + all[t.id].s3 + all[t.id].s4 + all[t.id].finale;
   });
   return all;
 }
 
-// ── Format helpers ────────────────────────────────────────────────────────────
+// ── Helpers ──────────────────────────────────────────────────────────────────
 function fmtMs(ms) {
   if (ms == null) return "—";
-  const s = Math.floor(ms / 1000);
-  const m = Math.floor(s / 60);
-  const sec = s % 60;
-  const tenth = Math.floor((ms % 1000) / 100);
-  return `${String(m).padStart(2,"0")}:${String(sec).padStart(2,"0")}.${tenth}`;
+  const s = Math.floor(ms/1000), m = Math.floor(s/60), sec = s%60;
+  return `${String(m).padStart(2,"0")}:${String(sec).padStart(2,"0")}.${Math.floor((ms%1000)/100)}`;
 }
 function fmtClock(ms) {
-  const s = Math.floor(Math.max(0, ms) / 1000);
+  const s = Math.floor(Math.max(0,ms)/1000);
   return `${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
 }
 
@@ -423,44 +392,40 @@ function getGlobalMs() {
   if (!g.running || !g.startedAt) return g.elapsedMs || 0;
   return (g.elapsedMs || 0) + (Date.now() - g.startedAt);
 }
-
 async function globalTimerOp(op) {
   const snap = await getDoc(docRef);
   if (snap.exists()) state = snap.data();
   const g = state.globalTimer || { elapsedMs:0, running:false, startedAt:null };
-  if (op === "start" && !g.running)  { g.running=true;  g.startedAt=Date.now(); }
-  if (op === "pause" && g.running)   { g.elapsedMs=getGlobalMs(); g.running=false; g.startedAt=null; }
-  if (op === "reset")                { g.elapsedMs=0; g.running=false; g.startedAt=null; }
-  if (op === "plus")                 { g.elapsedMs=getGlobalMs()+60000; g.startedAt=g.running?Date.now():null; }
+  if (op==="start" && !g.running) { g.running=true; g.startedAt=Date.now(); }
+  if (op==="pause" && g.running)  { g.elapsedMs=getGlobalMs(); g.running=false; g.startedAt=null; }
+  if (op==="reset")               { g.elapsedMs=0; g.running=false; g.startedAt=null; }
+  if (op==="plus")                { g.elapsedMs=getGlobalMs()+60000; g.startedAt=g.running?Date.now():null; }
   state.globalTimer = g;
-  await updateDoc(docRef, { globalTimer: g });
+  await updateDoc(docRef, { globalTimer:g });
   addLog("Global timer: " + op);
 }
 
-// ── Log helper ────────────────────────────────────────────────────────────────
+// ── Log / persist ────────────────────────────────────────────────────────────
 async function addLog(msg) {
-  const logs = (state.logs || []).slice(0, 14);
+  const logs = (state.logs||[]).slice(0,14);
   logs.unshift({ msg, time: new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}) });
   state.logs = logs;
   await updateDoc(docRef, { logs }).catch(()=>{});
 }
-
 async function saveState() {
   await setDoc(docRef, state, { merge:true });
 }
 
-// ── Per-station stopwatch state (local) ───────────────────────────────────────
+// ── Local stopwatch state ──────────────────────────────────────────────────────
 const localSW = {};
-STATIONS.filter(s => s.type === "timer").forEach(s => {
+STATIONS.filter(s=>s.type==="timer").forEach(s => {
   localSW[s.id] = { running:false, startMs:0, accumulated:0, intervalId:null };
 });
 
 function swElapsed(sid) {
   const sw = localSW[sid];
-  if (!sw) return 0;
-  return sw.accumulated + (sw.running ? Date.now() - sw.startMs : 0);
+  return sw ? sw.accumulated + (sw.running ? Date.now()-sw.startMs : 0) : 0;
 }
-
 function swSyncBtn(sid) {
   const btn = document.getElementById(`sw-start-${sid}`);
   if (!btn) return;
@@ -468,50 +433,81 @@ function swSyncBtn(sid) {
   btn.textContent = running ? "⏹ Stop" : "▶ Start";
   btn.className   = running ? "btn btn-danger" : "btn btn-primary";
 }
-
 function swStart(sid) {
   const sw = localSW[sid];
   if (sw.running) return;
-  sw.running  = true;
-  sw.startMs  = Date.now();
+  sw.running=true; sw.startMs=Date.now();
   sw.intervalId = setInterval(() => {
     const el = document.getElementById(`sw-${sid}`);
     if (el) el.textContent = fmtMs(swElapsed(sid));
   }, 100);
   swSyncBtn(sid);
 }
-
 function swPause(sid) {
   const sw = localSW[sid];
   if (!sw.running) return;
-  sw.accumulated += Date.now() - sw.startMs;
-  sw.running = false;
-  clearInterval(sw.intervalId);
+  sw.accumulated += Date.now()-sw.startMs;
+  sw.running=false; clearInterval(sw.intervalId);
   swSyncBtn(sid);
 }
-
 function swReset(sid) {
   const sw = localSW[sid];
   clearInterval(sw.intervalId);
-  sw.running = false;
-  sw.accumulated = 0;
-  sw.startMs = 0;
+  sw.running=false; sw.accumulated=0; sw.startMs=0;
   const el = document.getElementById(`sw-${sid}`);
   if (el) el.textContent = "00:00.0";
   swSyncBtn(sid);
 }
-
 function swToggle(sid) {
-  if (localSW[sid]?.running) swPause(sid);
-  else swStart(sid);
+  localSW[sid]?.running ? swPause(sid) : swStart(sid);
 }
 
-// ── Render: station view (timer) ───────────────────────────────────────────────
+// ── Render helpers: leaderboard panel only (no re-render of controls) ─────────────────
+function renderTimerLeaderboard(station, teams, scores) {
+  const timeKey = `${station.id}Time`;
+  const sorted = teams.slice().sort((a,b) => {
+    const at=a[timeKey], bt=b[timeKey];
+    if(at==null&&bt==null) return 0;
+    if(at==null) return 1; if(bt==null) return -1;
+    return at-bt;
+  });
+  return sorted.map((t,i) => {
+    const pts   = scores[t.id]?.[station.id] ?? 0;
+    const rankC = i===0?"r1":i===1?"r2":i===2?"r3":"";
+    return `
+    <div class="lrow ${i===0?"gold":""}">
+      <div class="rank ${rankC}">${i+1}</div>
+      <div>
+        <div class="team-name">${t.name}</div>
+        <div class="team-meta time-cell">${t[timeKey]!=null ? fmtMs(t[timeKey]) : "Not recorded"}</div>
+      </div>
+      <div class="team-pts">${pts>0 ? pts+" pts" : "—"}</div>
+    </div>`;
+  }).join("");
+}
+
+function renderCountLeaderboard(teams, scores) {
+  return teams.slice().sort((a,b)=>(b.s2Correct??-1)-(a.s2Correct??-1)).map((t,i) => {
+    const pts   = scores[t.id]?.s2 ?? 0;
+    const rankC = i===0?"r1":i===1?"r2":i===2?"r3":"";
+    return `
+    <div class="lrow ${i===0?"gold":""}">
+      <div class="rank ${rankC}">${i+1}</div>
+      <div>
+        <div class="team-name">${t.name}</div>
+        <div class="team-meta">${t.s2Correct!=null ? t.s2Correct+" / 20 correct" : "Not recorded"}</div>
+      </div>
+      <div class="team-pts">${pts>0 ? pts+" pts" : "—"}</div>
+    </div>`;
+  }).join("");
+}
+
+// ── Full station renders (used on first load / navigation) ───────────────────────
 function renderTimerStation(station) {
   const wrap = document.getElementById(`sg-${station.id}`);
   if (!wrap) return;
-  const scores  = computeScores(state.teams || []);
-  const teams   = state.teams || [];
+  const scores  = computeScores(state.teams||[]);
+  const teams   = state.teams||[];
   const sw      = localSW[station.id];
   const timeKey = `${station.id}Time`;
   const running = sw?.running;
@@ -521,23 +517,21 @@ function renderTimerStation(station) {
       <div class="pill">${station.title}</div>
       <h1 style="margin-top:.75rem">${station.subtitle}</h1>
       <div class="tag tag-timer" style="margin-top:.4rem">Timed · Fastest = 20 pts, then 15 / 10 / 5</div>
-
       <div class="sw-wrap" style="margin-top:1.25rem">
         <div>
           <div class="eyebrow">Stopwatch</div>
-          <div class="sw-display" id="sw-${station.id}">${fmtMs(sw ? sw.accumulated : 0)}</div>
+          <div class="sw-display" id="sw-${station.id}">${fmtMs(sw?sw.accumulated:0)}</div>
         </div>
         <div class="btn-row">
-          <button class="btn ${running ? 'btn-danger' : 'btn-primary'}" id="sw-start-${station.id}">${running ? '⏹ Stop' : '▶ Start'}</button>
+          <button class="btn ${running?'btn-danger':'btn-primary'}" id="sw-start-${station.id}">${running?'⏹ Stop':'▶ Start'}</button>
           <button class="btn btn-warn" id="sw-reset-${station.id}">↺ Reset</button>
         </div>
       </div>
-
       <div class="field-grid" style="margin-top:1.25rem">
         <div class="field full">
           <label>Team to save time for</label>
           <select id="sw-team-${station.id}">
-            ${teams.map(t => `<option value="${t.id}">${t.name}</option>`).join("")}
+            ${teams.map(t=>`<option value="${t.id}">${t.name}</option>`).join("")}
           </select>
         </div>
       </div>
@@ -547,52 +541,30 @@ function renderTimerStation(station) {
       </div>
       <div class="sw-saved" id="sw-msg-${station.id}"></div>
     </article>
-
     <article class="panel">
       <div class="eyebrow">Current rankings · ${station.title}</div>
       <h2>${station.subtitle} leaderboard</h2>
-      <div class="lboard" style="margin-top:.75rem">
-        ${teams.slice().sort((a,b)=>{
-          const at=a[timeKey], bt=b[timeKey];
-          if(at==null && bt==null) return 0;
-          if(at==null) return 1;
-          if(bt==null) return -1;
-          return at - bt;
-        }).map((t,i)=>{
-          const time  = t[timeKey];
-          const pts   = scores[t.id]?.[station.id] ?? 0;
-          const rankC = i===0?"r1":i===1?"r2":i===2?"r3":"";
-          return `
-          <div class="lrow ${i===0?'gold':''}">
-            <div class="rank ${rankC}">${i+1}</div>
-            <div>
-              <div class="team-name">${t.name}</div>
-              <div class="team-meta time-cell">${time!=null ? fmtMs(time) : "Not recorded"}</div>
-            </div>
-            <div class="team-pts">${pts > 0 ? pts+" pts" : "—"}</div>
-          </div>`;
-        }).join("")}
+      <div class="lboard" id="lb-${station.id}" style="margin-top:.75rem">
+        ${renderTimerLeaderboard(station, teams, scores)}
       </div>
-    </article>
-  `;
+    </article>`;
 
-  document.getElementById(`sw-start-${station.id}`).onclick = () => swToggle(station.id);
-  document.getElementById(`sw-reset-${station.id}`).onclick = () => swReset(station.id);
-  document.getElementById(`sw-team-${station.id}`).onchange = () => swReset(station.id);
+  document.getElementById(`sw-start-${station.id}`).onclick  = () => swToggle(station.id);
+  document.getElementById(`sw-reset-${station.id}`).onclick  = () => swReset(station.id);
+  document.getElementById(`sw-team-${station.id}`).onchange  = () => swReset(station.id);
 
   document.getElementById(`sw-save-${station.id}`).onclick = async () => {
     const teamId  = document.getElementById(`sw-team-${station.id}`).value;
     const elapsed = swElapsed(station.id);
     swPause(station.id);
     const team = (state.teams||[]).find(t=>t.id===teamId);
-    if (!team || elapsed === 0) return;
+    if (!team || elapsed===0) return;
     team[timeKey] = elapsed;
     await saveState();
     addLog(`${team.name} time at ${station.title}: ${fmtMs(elapsed)}`);
     const msg = document.getElementById(`sw-msg-${station.id}`);
-    if (msg) { msg.textContent = `Saved ${team.name}: ${fmtMs(elapsed)}`; msg.classList.add("show"); }
+    if (msg) { msg.textContent=`Saved ${team.name}: ${fmtMs(elapsed)}`; msg.classList.add("show"); }
   };
-
   document.getElementById(`sw-clear-${station.id}`).onclick = async () => {
     const teamId = document.getElementById(`sw-team-${station.id}`).value;
     const team   = (state.teams||[]).find(t=>t.id===teamId);
@@ -603,12 +575,11 @@ function renderTimerStation(station) {
   };
 }
 
-// ── Render: station 2 (count) ──────────────────────────────────────────────────
 function renderCountStation() {
   const station = STATIONS[1];
   const wrap    = document.getElementById("sg-s2");
   if (!wrap) return;
-  const teams  = state.teams || [];
+  const teams  = state.teams||[];
   const scores = computeScores(teams);
 
   wrap.innerHTML = `
@@ -617,7 +588,6 @@ function renderCountStation() {
       <h1 style="margin-top:.75rem">${station.subtitle}</h1>
       <div class="tag tag-count" style="margin-top:.4rem">Count · Points = number of correct answers (max 20)</div>
       <p style="margin-top:.75rem">Work through the True/False worksheet. Count correct answers and save for each team.</p>
-
       <div class="field-grid" style="margin-top:1.25rem">
         <div class="field full">
           <label>Team</label>
@@ -636,40 +606,25 @@ function renderCountStation() {
       </div>
       <div class="sw-saved" id="count-msg"></div>
     </article>
-
     <article class="panel">
       <div class="eyebrow">Current scores · Station 2</div>
       <h2>False Witness leaderboard</h2>
-      <div class="lboard" style="margin-top:.75rem">
-        ${teams.slice().sort((a,b)=>(b.s2Correct??-1)-(a.s2Correct??-1)).map((t,i)=>{
-          const pts = scores[t.id]?.s2 ?? 0;
-          const rankC = i===0?"r1":i===1?"r2":i===2?"r3":"";
-          return `
-          <div class="lrow ${i===0?'gold':''}">
-            <div class="rank ${rankC}">${i+1}</div>
-            <div>
-              <div class="team-name">${t.name}</div>
-              <div class="team-meta">${t.s2Correct!=null ? t.s2Correct+" / 20 correct" : "Not recorded"}</div>
-            </div>
-            <div class="team-pts">${pts > 0 ? pts+" pts" : "—"}</div>
-          </div>`;
-        }).join("")}
+      <div class="lboard" id="lb-s2" style="margin-top:.75rem">
+        ${renderCountLeaderboard(teams, scores)}
       </div>
-    </article>
-  `;
+    </article>`;
 
   document.getElementById("count-save").onclick = async () => {
     const teamId = document.getElementById("count-team").value;
-    const val    = Number(document.getElementById("count-val").value || 0);
+    const val    = Number(document.getElementById("count-val").value||0);
     const team   = (state.teams||[]).find(t=>t.id===teamId);
     if (!team) return;
     team.s2Correct = Math.min(20, Math.max(0, val));
     await saveState();
     addLog(`${team.name}: ${team.s2Correct}/20 at Station 2`);
     const msg = document.getElementById("count-msg");
-    if (msg) { msg.textContent = `Saved ${team.name}: ${team.s2Correct} pts`; msg.classList.add("show"); }
+    if (msg) { msg.textContent=`Saved ${team.name}: ${team.s2Correct} pts`; msg.classList.add("show"); }
   };
-
   document.getElementById("count-clear").onclick = async () => {
     const teamId = document.getElementById("count-team").value;
     const team   = (state.teams||[]).find(t=>t.id===teamId);
@@ -680,38 +635,51 @@ function renderCountStation() {
   };
 }
 
-// ── Render: finale ─────────────────────────────────────────────────────────────
+// ── Live leaderboard-only updates (no disruption to running stopwatch) ────────────────
+// Called on every Firestore snapshot to refresh just the scores panel
+function refreshStationLeaderboards() {
+  const teams  = state.teams||[];
+  const scores = computeScores(teams);
+
+  STATIONS.forEach(s => {
+    const lb = document.getElementById(`lb-${s.id}`);
+    if (!lb) return;
+    if (s.type==="timer")  lb.innerHTML = renderTimerLeaderboard(s, teams, scores);
+    if (s.type==="count")  lb.innerHTML = renderCountLeaderboard(teams, scores);
+  });
+}
+
+// ── Finale ──────────────────────────────────────────────────────────────────
 function renderFinale() {
-  const teams = state.teams || [];
+  const teams = state.teams||[];
   const el = document.getElementById("finaleCards");
   if (!el) return;
-  el.innerHTML = teams.map(t => `
+  el.innerHTML = teams.map(t=>`
     <div class="finale-card ${t.finaleWinner?"winner":""}" data-tid="${t.id}">
       <div class="team-nm">${t.name}</div>
-      <div class="pts-badge">${t.finaleWinner ? "+"+FINALE_PTS+" pts 🏆" : "—"}</div>
-    </div>
-  `).join("");
+      <div class="pts-badge">${t.finaleWinner?"+"+FINALE_PTS+" pts 🏆":"—"}</div>
+    </div>`).join("");
   el.querySelectorAll(".finale-card").forEach(card => {
     card.onclick = async () => {
       const tid = card.dataset.tid;
-      (state.teams||[]).forEach(t => { t.finaleWinner = t.id === tid; });
+      (state.teams||[]).forEach(t => { t.finaleWinner = t.id===tid; });
       await saveState();
       addLog(`Finale winner: ${(state.teams||[]).find(t=>t.id===tid)?.name}`);
     };
   });
 }
 
-// ── Render: leaderboard ────────────────────────────────────────────────────────
+// ── Leaderboard (dashboard + projector) ───────────────────────────────────────
 function renderLeaderboard(containerId, teams, scores, projector=false) {
   const el = document.getElementById(containerId);
   if (!el) return;
-  const sorted = [...teams].sort((a,b)=>scores[b.id].total - scores[a.id].total);
+  const sorted = [...teams].sort((a,b)=>scores[b.id].total-scores[a.id].total);
   el.innerHTML = sorted.map((t,i) => {
     const s = scores[t.id];
     const rankC = i===0?"r1":i===1?"r2":i===2?"r3":"";
-    const rowClass = projector ? `proj-row ${i===0?"gold":""}` : `lrow ${i===0?"gold":""}`;
+    const cls   = projector ? `proj-row ${i===0?"gold":""}` : `lrow ${i===0?"gold":""}`;
     return `
-      <div class="${rowClass}">
+      <div class="${cls}">
         <div class="rank ${rankC}">${i+1}</div>
         <div>
           <div class="team-name">${t.name}</div>
@@ -722,23 +690,20 @@ function renderLeaderboard(containerId, teams, scores, projector=false) {
   }).join("");
 }
 
-// ── Render: breakdown table ────────────────────────────────────────────────────
 function renderBreakdown(teams, scores) {
   const el = document.querySelector("#breakdownTable tbody");
   if (!el) return;
   const sorted = [...teams].sort((a,b)=>scores[b.id].total-scores[a.id].total);
   el.innerHTML = `
     <tr>
-      <th>Team</th>
-      <th>S1 Time</th><th>S1 Pts</th>
+      <th>Team</th><th>S1 Time</th><th>S1 Pts</th>
       <th>S2 Correct</th><th>S2 Pts</th>
       <th>S3 Time</th><th>S3 Pts</th>
       <th>S4 Time</th><th>S4 Pts</th>
-      <th>Finale</th>
-      <th><strong>Total</strong></th>
+      <th>Finale</th><th><strong>Total</strong></th>
     </tr>
     ${sorted.map(t=>{
-      const s = scores[t.id];
+      const s=scores[t.id];
       return `<tr>
         <td><strong>${t.name}</strong></td>
         <td class="time-cell">${fmtMs(t.s1Time)}</td><td>${s.s1||"—"}</td>
@@ -748,64 +713,55 @@ function renderBreakdown(teams, scores) {
         <td>${t.finaleWinner?"🏆 +40":"—"}</td>
         <td><strong>${s.total}</strong></td>
       </tr>`;
-    }).join("")}
-  `;
+    }).join("")}`;
 }
 
-// ── Render: summary cards ──────────────────────────────────────────────────────
 function renderSummary(teams, scores) {
   const el = document.getElementById("summaryCards");
   if (!el) return;
   const sorted = [...teams].sort((a,b)=>scores[b.id].total-scores[a.id].total);
   const leader = sorted[0];
   const total  = Object.values(scores).reduce((sum,s)=>sum+s.total,0);
-  const cards  = [
-    { label:"Teams",      value: teams.length },
-    { label:"Leader",     value: leader ? leader.name : "—" },
-    { label:"Top score",  value: leader ? scores[leader.id].total : 0 },
-    { label:"Total pts",  value: total },
-  ];
-  el.innerHTML = cards.map(c=>`
-    <article class="panel">
-      <div class="kpi-label">${c.label}</div>
-      <div class="kpi-value">${c.value}</div>
-    </article>`).join("");
+  el.innerHTML = [
+    { label:"Teams",     value: teams.length },
+    { label:"Leader",    value: leader?leader.name:"—" },
+    { label:"Top score", value: leader?scores[leader.id].total:0 },
+    { label:"Total pts", value: total },
+  ].map(c=>`<article class="panel"><div class="kpi-label">${c.label}</div><div class="kpi-value">${c.value}</div></article>`).join("");
 }
 
-// ── Render: log ────────────────────────────────────────────────────────────────
 function renderLog() {
   const el = document.getElementById("logList");
   if (!el) return;
-  const logs = state.logs || [];
+  const logs = state.logs||[];
   el.innerHTML = logs.length
-    ? logs.map(l=>`
-        <div class="log-item">
-          <div class="log-row"><strong>${l.msg}</strong><span style="color:var(--muted)">${l.time}</span></div>
-        </div>`).join("")
+    ? logs.map(l=>`<div class="log-item"><div class="log-row"><strong>${l.msg}</strong><span style="color:var(--muted)">${l.time}</span></div></div>`).join("")
     : `<div class="log-item" style="color:var(--muted)">No updates yet.</div>`;
 }
 
 // ── Master render ──────────────────────────────────────────────────────────────
+// Called on every Firestore snapshot.
+// - Always updates dashboard, projector, leaderboard panels, log, finale.
+// - For station views: if the station HTML already exists (user has visited it),
+//   only refresh the leaderboard sub-panel so the running stopwatch is not disrupted.
+//   If the user hasn’t visited yet, it’s rendered fresh when they navigate there.
 function renderAll() {
-  const teams  = state.teams || [];
+  const teams  = state.teams||[];
   const scores = computeScores(teams);
+
+  // Dashboard + projector
   renderSummary(teams, scores);
   renderBreakdown(teams, scores);
   renderLeaderboard("dashLeader", teams, scores);
   renderLeaderboard("projList",   teams, scores, true);
   renderLog();
   renderFinale();
-  const activeView = document.querySelector(".view.active");
-  if (activeView) {
-    const vid = activeView.id;
-    STATIONS.filter(s=>s.type==="timer").forEach(s => {
-      if (vid === `v-${s.id}`) renderTimerStation(s);
-    });
-    if (vid === "v-s2") renderCountStation();
-  }
+
+  // Station leaderboard panels — live-update scores without touching stopwatch controls
+  refreshStationLeaderboards();
 }
 
-// ── Global clock tick ──────────────────────────────────────────────────────────
+// ── Clock tick ────────────────────────────────────────────────────────────────
 setInterval(() => {
   const t = fmtClock(getGlobalMs());
   const gc = document.getElementById("globalClock");
@@ -821,23 +777,20 @@ function setView(vid) {
   location.hash = vid;
   const s = STATIONS.find(s=>s.id===vid);
   if (s) {
-    if (s.type === "timer") renderTimerStation(s);
-    else if (s.type === "count") renderCountStation();
+    // Full render on first visit; thereafter refreshStationLeaderboards handles live updates
+    if (s.type==="timer") renderTimerStation(s);
+    else if (s.type==="count") renderCountStation();
   }
-  if (vid === "finale") renderFinale();
+  if (vid==="finale") renderFinale();
 }
+document.querySelectorAll(".chip[data-v]").forEach(c=>c.addEventListener("click",()=>setView(c.dataset.v)));
 
-document.querySelectorAll(".chip[data-v]").forEach(c=>{
-  c.addEventListener("click", ()=>setView(c.dataset.v));
-});
+// ── Buttons ──────────────────────────────────────────────────────────────────
+document.getElementById("gStart").onclick = ()=>globalTimerOp("start");
+document.getElementById("gPause").onclick = ()=>globalTimerOp("pause");
+document.getElementById("gReset").onclick = ()=>globalTimerOp("reset");
+document.getElementById("gPlus").onclick  = ()=>globalTimerOp("plus");
 
-// ── Global timer buttons ───────────────────────────────────────────────────────
-document.getElementById("gStart").onclick  = ()=>globalTimerOp("start");
-document.getElementById("gPause").onclick  = ()=>globalTimerOp("pause");
-document.getElementById("gReset").onclick  = ()=>globalTimerOp("reset");
-document.getElementById("gPlus").onclick   = ()=>globalTimerOp("plus");
-
-// ── Dashboard buttons ──────────────────────────────────────────────────────────
 document.getElementById("btnResetAll").onclick = async () => {
   if (!confirm("Reset ALL data? This cannot be undone.")) return;
   state = makeDefault();
@@ -852,16 +805,13 @@ document.getElementById("btnClearFinale").onclick = async () => {
   await saveState();
   addLog("Finale winner cleared");
 };
-
-// ── Theme toggle ───────────────────────────────────────────────────────────────
 document.getElementById("themeBtn").onclick = () => {
   const next = document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";
   document.documentElement.setAttribute("data-theme", next);
 };
 
-// ── Hash routing ───────────────────────────────────────────────────────────────
-window.addEventListener("hashchange", ()=>{
-  const h = location.hash.replace("#","") || "dashboard";
+window.addEventListener("hashchange", () => {
+  const h = location.hash.replace("#","")||"dashboard";
   setView(h);
 });
 
@@ -875,13 +825,12 @@ onSnapshot(docRef, snap => {
   console.error(err);
 });
 
-// bootstrap
 (async () => {
   const snap = await getDoc(docRef);
   if (!snap.exists()) await setDoc(docRef, makeDefault());
   else state = snap.data();
   renderAll();
-  const h = location.hash.replace("#","") || "dashboard";
+  const h = location.hash.replace("#","")||"dashboard";
   setView(h);
 })();
 </script>
