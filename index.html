@@ -34,7 +34,6 @@
     h2{font-size:clamp(1.125rem,1rem + .75vw,1.5rem)}
     p{margin:0;color:var(--muted)}
 
-    /* ── layout ── */
     .shell{display:grid;min-height:100vh}
     .nav{position:sticky;top:0;z-index:30;
       background:color-mix(in srgb,var(--surface) 92%,transparent);
@@ -53,23 +52,19 @@
     .view{display:none;max-width:1300px;margin:0 auto}
     .view.active{display:block}
 
-    /* ── cards / panels ── */
     .panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);
       padding:1.25rem;box-shadow:var(--shadow)}
     .grid-2{display:grid;gap:1rem;grid-template-columns:1fr}
     .grid-4{display:grid;gap:1rem;grid-template-columns:repeat(2,1fr)}
     .station-grid{display:grid;gap:1rem;grid-template-columns:1fr}
 
-    /* ── typography helpers ── */
     .eyebrow{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
     .pill{display:inline-flex;align-items:center;gap:.5rem;border-radius:var(--r-full);
       background:var(--primary-hl);color:var(--primary);padding:.4rem .8rem;font-size:.75rem;font-weight:700}
     .tag{display:inline-block;padding:.25rem .65rem;border-radius:var(--r-full);font-size:.7rem;font-weight:700}
     .tag-timer{background:var(--warn-s);color:var(--warn)}
     .tag-count{background:var(--success-s);color:var(--success)}
-    .tag-finale{background:var(--primary-hl);color:var(--primary)}
 
-    /* ── buttons ── */
     .btn{border:1px solid transparent;border-radius:var(--r-full);min-height:44px;
       padding:.8rem 1.1rem;background:var(--surface2);color:var(--text);transition:all var(--tr)}
     .btn:hover{transform:translateY(-1px)}
@@ -81,7 +76,6 @@
     .btn-danger{background:var(--err-s);color:var(--err)}
     .btn-row{display:flex;flex-wrap:wrap;gap:.75rem}
 
-    /* ── forms ── */
     .field-grid{display:grid;gap:.75rem;grid-template-columns:repeat(2,1fr)}
     .field{display:grid;gap:.4rem}
     .field.full{grid-column:1/-1}
@@ -90,22 +84,13 @@
       width:100%;min-height:48px;border-radius:var(--r-md);border:1px solid var(--border);
       background:var(--surface2);padding:.75rem .9rem;color:var(--text)}
 
-    /* ── stopwatch ── */
     .sw-wrap{display:grid;gap:1rem}
     .sw-display{font-size:clamp(2.8rem,10vw,5rem);font-weight:900;font-variant-numeric:tabular-nums;
       letter-spacing:.05em;line-height:1}
-    .sw-team-label{font-size:.8rem;color:var(--muted)}
     .sw-saved{background:var(--success-s);color:var(--success);border-radius:var(--r-lg);
       padding:.75rem;font-size:.875rem;display:none}
     .sw-saved.show{display:block}
 
-    /* ── kpi ── */
-    .kpi-grid{display:grid;gap:1rem;grid-template-columns:repeat(2,1fr)}
-    .kpi{padding:1rem;border-radius:var(--r-lg);background:var(--surface2);border:1px solid var(--divider)}
-    .kpi-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
-    .kpi-value{margin-top:.4rem;font-size:1.8rem;font-weight:800;font-variant-numeric:tabular-nums}
-
-    /* ── leaderboard ── */
     .lboard{display:grid;gap:.75rem}
     .lrow{display:grid;grid-template-columns:auto 1fr auto;gap:.75rem;align-items:center;
       padding:1rem;border:1px solid var(--divider);border-radius:var(--r-lg);background:var(--surface2)}
@@ -119,7 +104,6 @@
     .team-meta{font-size:.75rem;color:var(--muted);margin-top:.2rem}
     .team-pts{font-weight:900;font-size:1.5rem;font-variant-numeric:tabular-nums}
 
-    /* ── station breakdown table ── */
     .breakdown{width:100%;border-collapse:collapse;font-size:.875rem}
     .breakdown th{text-align:left;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;
       color:var(--muted);padding:.5rem .75rem;border-bottom:1px solid var(--divider)}
@@ -127,7 +111,6 @@
     .breakdown tr:last-child td{border-bottom:none}
     .time-cell{font-variant-numeric:tabular-nums;font-weight:600}
 
-    /* ── projector ── */
     .proj-shell{display:grid;gap:1.5rem}
     .proj-header{display:grid;gap:1rem;padding:1.5rem;border-radius:var(--r-xl);
       background:var(--surface);border:1px solid var(--border)}
@@ -141,12 +124,10 @@
     .proj-row .team-meta{font-size:.9rem}
     .proj-row .team-pts{font-size:clamp(2rem,4vw,3.5rem)}
 
-    /* ── log ── */
     .log-list{display:grid;gap:.75rem}
     .log-item{border:1px solid var(--divider);border-radius:var(--r-lg);padding:1rem;background:var(--surface2)}
     .log-row{display:flex;justify-content:space-between;gap:.75rem;font-size:.875rem}
 
-    /* ── finale ── */
     .finale-cards{display:grid;gap:1rem;grid-template-columns:repeat(2,1fr)}
     .finale-card{padding:1.25rem;border-radius:var(--r-xl);border:2px solid var(--divider);
       background:var(--surface2);cursor:pointer;transition:all var(--tr);text-align:center}
@@ -159,7 +140,6 @@
     .note{font-size:.875rem;color:var(--muted)}
     .alert{padding:.75rem 1rem;border-radius:var(--r-md);font-size:.875rem}
     .alert-warn{background:var(--warn-s);color:var(--warn)}
-    .alert-success{background:var(--success-s);color:var(--success)}
 
     @media(min-width:720px){
       .main{padding:1.5rem}
@@ -184,7 +164,6 @@
 </head>
 <body>
 <div class="shell">
-  <!-- ── Navigation ── -->
   <aside class="nav" aria-label="Navigation">
     <div class="nav-inner">
       <div class="brand">
@@ -210,7 +189,6 @@
     </div>
   </aside>
 
-  <!-- ── Main ── -->
   <main class="main">
 
     <!-- DASHBOARD -->
@@ -259,13 +237,147 @@
     </section>
 
     <!-- STATION 1 -->
-    <section class="view" id="v-s1"><div class="station-grid" id="sg-s1"></div></section>
+    <section class="view" id="v-s1">
+      <div class="station-grid">
+        <article class="panel" id="ctrl-s1">
+          <div class="pill">Station 1</div>
+          <h1 style="margin-top:.75rem">Lord's Prayer</h1>
+          <div class="tag tag-timer" style="margin-top:.4rem">Timed · Fastest = 20 pts, then 15 / 10 / 5</div>
+          <div class="sw-wrap" style="margin-top:1.25rem">
+            <div>
+              <div class="eyebrow">Stopwatch</div>
+              <div class="sw-display" id="sw-s1">00:00.0</div>
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-primary" id="sw-start-s1">▶ Start</button>
+              <button class="btn btn-warn" id="sw-reset-s1">↺ Reset</button>
+            </div>
+          </div>
+          <div class="field-grid" style="margin-top:1.25rem">
+            <div class="field full">
+              <label>Team to save time for</label>
+              <select id="sw-team-s1"></select>
+            </div>
+          </div>
+          <div class="btn-row" style="margin-top:.75rem">
+            <button class="btn btn-success" id="sw-save-s1">Save time for team</button>
+            <button class="btn btn-danger btn-soft" id="sw-clear-s1">Clear team's time</button>
+          </div>
+          <div class="sw-saved" id="sw-msg-s1"></div>
+        </article>
+        <article class="panel">
+          <div class="eyebrow">Current rankings · Station 1</div>
+          <h2>Lord's Prayer leaderboard</h2>
+          <div class="lboard" id="lb-s1" style="margin-top:.75rem"></div>
+        </article>
+      </div>
+    </section>
+
     <!-- STATION 2 -->
-    <section class="view" id="v-s2"><div class="station-grid" id="sg-s2"></div></section>
+    <section class="view" id="v-s2">
+      <div class="station-grid">
+        <article class="panel" id="ctrl-s2">
+          <div class="pill">Station 2</div>
+          <h1 style="margin-top:.75rem">False Witness</h1>
+          <div class="tag tag-count" style="margin-top:.4rem">Count · Points = number of correct answers (max 20)</div>
+          <p style="margin-top:.75rem">Work through the True/False worksheet. Count correct answers and save for each team.</p>
+          <div class="field-grid" style="margin-top:1.25rem">
+            <div class="field full">
+              <label>Team</label>
+              <select id="count-team"></select>
+            </div>
+            <div class="field full">
+              <label>Correct answers (0 – 20)</label>
+              <input type="number" id="count-val" min="0" max="20" value="0" />
+            </div>
+          </div>
+          <div class="btn-row" style="margin-top:.75rem">
+            <button class="btn btn-success" id="count-save">Save score</button>
+            <button class="btn btn-danger btn-soft" id="count-clear">Clear team's score</button>
+          </div>
+          <div class="sw-saved" id="count-msg"></div>
+        </article>
+        <article class="panel">
+          <div class="eyebrow">Current scores · Station 2</div>
+          <h2>False Witness leaderboard</h2>
+          <div class="lboard" id="lb-s2" style="margin-top:.75rem"></div>
+        </article>
+      </div>
+    </section>
+
     <!-- STATION 3 -->
-    <section class="view" id="v-s3"><div class="station-grid" id="sg-s3"></div></section>
+    <section class="view" id="v-s3">
+      <div class="station-grid">
+        <article class="panel" id="ctrl-s3">
+          <div class="pill">Station 3</div>
+          <h1 style="margin-top:.75rem">Cups</h1>
+          <div class="tag tag-timer" style="margin-top:.4rem">Timed · Fastest = 20 pts, then 15 / 10 / 5</div>
+          <div class="sw-wrap" style="margin-top:1.25rem">
+            <div>
+              <div class="eyebrow">Stopwatch</div>
+              <div class="sw-display" id="sw-s3">00:00.0</div>
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-primary" id="sw-start-s3">▶ Start</button>
+              <button class="btn btn-warn" id="sw-reset-s3">↺ Reset</button>
+            </div>
+          </div>
+          <div class="field-grid" style="margin-top:1.25rem">
+            <div class="field full">
+              <label>Team to save time for</label>
+              <select id="sw-team-s3"></select>
+            </div>
+          </div>
+          <div class="btn-row" style="margin-top:.75rem">
+            <button class="btn btn-success" id="sw-save-s3">Save time for team</button>
+            <button class="btn btn-danger btn-soft" id="sw-clear-s3">Clear team's time</button>
+          </div>
+          <div class="sw-saved" id="sw-msg-s3"></div>
+        </article>
+        <article class="panel">
+          <div class="eyebrow">Current rankings · Station 3</div>
+          <h2>Cups leaderboard</h2>
+          <div class="lboard" id="lb-s3" style="margin-top:.75rem"></div>
+        </article>
+      </div>
+    </section>
+
     <!-- STATION 4 -->
-    <section class="view" id="v-s4"><div class="station-grid" id="sg-s4"></div></section>
+    <section class="view" id="v-s4">
+      <div class="station-grid">
+        <article class="panel" id="ctrl-s4">
+          <div class="pill">Station 4</div>
+          <h1 style="margin-top:.75rem">Ten Commandments</h1>
+          <div class="tag tag-timer" style="margin-top:.4rem">Timed · Fastest = 20 pts, then 15 / 10 / 5</div>
+          <div class="sw-wrap" style="margin-top:1.25rem">
+            <div>
+              <div class="eyebrow">Stopwatch</div>
+              <div class="sw-display" id="sw-s4">00:00.0</div>
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-primary" id="sw-start-s4">▶ Start</button>
+              <button class="btn btn-warn" id="sw-reset-s4">↺ Reset</button>
+            </div>
+          </div>
+          <div class="field-grid" style="margin-top:1.25rem">
+            <div class="field full">
+              <label>Team to save time for</label>
+              <select id="sw-team-s4"></select>
+            </div>
+          </div>
+          <div class="btn-row" style="margin-top:.75rem">
+            <button class="btn btn-success" id="sw-save-s4">Save time for team</button>
+            <button class="btn btn-danger btn-soft" id="sw-clear-s4">Clear team's time</button>
+          </div>
+          <div class="sw-saved" id="sw-msg-s4"></div>
+        </article>
+        <article class="panel">
+          <div class="eyebrow">Current rankings · Station 4</div>
+          <h2>Ten Commandments leaderboard</h2>
+          <div class="lboard" id="lb-s4" style="margin-top:.75rem"></div>
+        </article>
+      </div>
+    </section>
 
     <!-- FINALE -->
     <section class="view" id="v-finale">
@@ -303,9 +415,9 @@
 </div>
 
 <script type="module">
-import { initializeApp }       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc }
-                                from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+                            from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCFC7xHXD0eGFIlLBjpgiDuWu_K1vZeeXA",
@@ -405,7 +517,7 @@ async function globalTimerOp(op) {
   addLog("Global timer: " + op);
 }
 
-// ── Log / persist ────────────────────────────────────────────────────────────
+// ── Log / persist ──────────────────────────────────────────────────────────────
 async function addLog(msg) {
   const logs = (state.logs||[]).slice(0,14);
   logs.unshift({ msg, time: new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}) });
@@ -458,162 +570,78 @@ function swReset(sid) {
   if (el) el.textContent = "00:00.0";
   swSyncBtn(sid);
 }
-function swToggle(sid) {
-  localSW[sid]?.running ? swPause(sid) : swStart(sid);
-}
+function swToggle(sid) { localSW[sid]?.running ? swPause(sid) : swStart(sid); }
 
-// ── Render helpers: leaderboard panel only (no re-render of controls) ─────────────────
-function renderTimerLeaderboard(station, teams, scores) {
+// ── Leaderboard HTML builders ────────────────────────────────────────────────
+function buildTimerLb(station, teams, scores) {
   const timeKey = `${station.id}Time`;
-  const sorted = teams.slice().sort((a,b) => {
+  return teams.slice().sort((a,b) => {
     const at=a[timeKey], bt=b[timeKey];
     if(at==null&&bt==null) return 0;
     if(at==null) return 1; if(bt==null) return -1;
     return at-bt;
-  });
-  return sorted.map((t,i) => {
-    const pts   = scores[t.id]?.[station.id] ?? 0;
-    const rankC = i===0?"r1":i===1?"r2":i===2?"r3":"";
-    return `
-    <div class="lrow ${i===0?"gold":""}">
+  }).map((t,i) => {
+    const pts=scores[t.id]?.[station.id]??0, rankC=i===0?"r1":i===1?"r2":i===2?"r3":"";
+    return `<div class="lrow ${i===0?"gold":""}">
       <div class="rank ${rankC}">${i+1}</div>
-      <div>
-        <div class="team-name">${t.name}</div>
-        <div class="team-meta time-cell">${t[timeKey]!=null ? fmtMs(t[timeKey]) : "Not recorded"}</div>
-      </div>
-      <div class="team-pts">${pts>0 ? pts+" pts" : "—"}</div>
+      <div><div class="team-name">${t.name}</div>
+      <div class="team-meta time-cell">${t[timeKey]!=null?fmtMs(t[timeKey]):"Not recorded"}</div></div>
+      <div class="team-pts">${pts>0?pts+" pts":"—"}</div>
     </div>`;
   }).join("");
 }
 
-function renderCountLeaderboard(teams, scores) {
+function buildCountLb(teams, scores) {
   return teams.slice().sort((a,b)=>(b.s2Correct??-1)-(a.s2Correct??-1)).map((t,i) => {
-    const pts   = scores[t.id]?.s2 ?? 0;
-    const rankC = i===0?"r1":i===1?"r2":i===2?"r3":"";
-    return `
-    <div class="lrow ${i===0?"gold":""}">
+    const pts=scores[t.id]?.s2??0, rankC=i===0?"r1":i===1?"r2":i===2?"r3":"";
+    return `<div class="lrow ${i===0?"gold":""}">
       <div class="rank ${rankC}">${i+1}</div>
-      <div>
-        <div class="team-name">${t.name}</div>
-        <div class="team-meta">${t.s2Correct!=null ? t.s2Correct+" / 20 correct" : "Not recorded"}</div>
-      </div>
-      <div class="team-pts">${pts>0 ? pts+" pts" : "—"}</div>
+      <div><div class="team-name">${t.name}</div>
+      <div class="team-meta">${t.s2Correct!=null?t.s2Correct+" / 20 correct":"Not recorded"}</div></div>
+      <div class="team-pts">${pts>0?pts+" pts":"—"}</div>
     </div>`;
   }).join("");
 }
 
-// ── Full station renders (used on first load / navigation) ───────────────────────
-function renderTimerStation(station) {
-  const wrap = document.getElementById(`sg-${station.id}`);
-  if (!wrap) return;
-  const scores  = computeScores(state.teams||[]);
-  const teams   = state.teams||[];
-  const sw      = localSW[station.id];
-  const timeKey = `${station.id}Time`;
-  const running = sw?.running;
+// ── Populate team dropdowns once (on init) ───────────────────────────────────
+function populateSelects(teams) {
+  const opts = teams.map(t=>`<option value="${t.id}">${t.name}</option>`).join("");
+  ["sw-team-s1","sw-team-s3","sw-team-s4","count-team"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && !el.dataset.populated) { el.innerHTML = opts; el.dataset.populated = "1"; }
+  });
+}
 
-  wrap.innerHTML = `
-    <article class="panel">
-      <div class="pill">${station.title}</div>
-      <h1 style="margin-top:.75rem">${station.subtitle}</h1>
-      <div class="tag tag-timer" style="margin-top:.4rem">Timed · Fastest = 20 pts, then 15 / 10 / 5</div>
-      <div class="sw-wrap" style="margin-top:1.25rem">
-        <div>
-          <div class="eyebrow">Stopwatch</div>
-          <div class="sw-display" id="sw-${station.id}">${fmtMs(sw?sw.accumulated:0)}</div>
-        </div>
-        <div class="btn-row">
-          <button class="btn ${running?'btn-danger':'btn-primary'}" id="sw-start-${station.id}">${running?'⏹ Stop':'▶ Start'}</button>
-          <button class="btn btn-warn" id="sw-reset-${station.id}">↺ Reset</button>
-        </div>
-      </div>
-      <div class="field-grid" style="margin-top:1.25rem">
-        <div class="field full">
-          <label>Team to save time for</label>
-          <select id="sw-team-${station.id}">
-            ${teams.map(t=>`<option value="${t.id}">${t.name}</option>`).join("")}
-          </select>
-        </div>
-      </div>
-      <div class="btn-row" style="margin-top:.75rem">
-        <button class="btn btn-success" id="sw-save-${station.id}">Save time for team</button>
-        <button class="btn btn-danger btn-soft" id="sw-clear-${station.id}">Clear team's time</button>
-      </div>
-      <div class="sw-saved" id="sw-msg-${station.id}"></div>
-    </article>
-    <article class="panel">
-      <div class="eyebrow">Current rankings · ${station.title}</div>
-      <h2>${station.subtitle} leaderboard</h2>
-      <div class="lboard" id="lb-${station.id}" style="margin-top:.75rem">
-        ${renderTimerLeaderboard(station, teams, scores)}
-      </div>
-    </article>`;
+// ── Wire up station controls (called once on init) ───────────────────────────
+function wireTimerStation(sid) {
+  document.getElementById(`sw-start-${sid}`).onclick = () => swToggle(sid);
+  document.getElementById(`sw-reset-${sid}`).onclick = () => swReset(sid);
+  document.getElementById(`sw-team-${sid}`).onchange = () => swReset(sid);
 
-  document.getElementById(`sw-start-${station.id}`).onclick  = () => swToggle(station.id);
-  document.getElementById(`sw-reset-${station.id}`).onclick  = () => swReset(station.id);
-  document.getElementById(`sw-team-${station.id}`).onchange  = () => swReset(station.id);
-
-  document.getElementById(`sw-save-${station.id}`).onclick = async () => {
-    const teamId  = document.getElementById(`sw-team-${station.id}`).value;
-    const elapsed = swElapsed(station.id);
-    swPause(station.id);
+  const timeKey = `${sid}Time`;
+  document.getElementById(`sw-save-${sid}`).onclick = async () => {
+    const teamId  = document.getElementById(`sw-team-${sid}`).value;
+    const elapsed = swElapsed(sid);
+    swPause(sid);
     const team = (state.teams||[]).find(t=>t.id===teamId);
     if (!team || elapsed===0) return;
     team[timeKey] = elapsed;
     await saveState();
-    addLog(`${team.name} time at ${station.title}: ${fmtMs(elapsed)}`);
-    const msg = document.getElementById(`sw-msg-${station.id}`);
+    addLog(`${team.name} time at Station ${sid.slice(1)}: ${fmtMs(elapsed)}`);
+    const msg = document.getElementById(`sw-msg-${sid}`);
     if (msg) { msg.textContent=`Saved ${team.name}: ${fmtMs(elapsed)}`; msg.classList.add("show"); }
   };
-  document.getElementById(`sw-clear-${station.id}`).onclick = async () => {
-    const teamId = document.getElementById(`sw-team-${station.id}`).value;
+  document.getElementById(`sw-clear-${sid}`).onclick = async () => {
+    const teamId = document.getElementById(`sw-team-${sid}`).value;
     const team   = (state.teams||[]).find(t=>t.id===teamId);
     if (!team) return;
     team[timeKey] = null;
     await saveState();
-    addLog(`Cleared time for ${team.name} at ${station.title}`);
+    addLog(`Cleared time for ${team.name} at Station ${sid.slice(1)}`);
   };
 }
 
-function renderCountStation() {
-  const station = STATIONS[1];
-  const wrap    = document.getElementById("sg-s2");
-  if (!wrap) return;
-  const teams  = state.teams||[];
-  const scores = computeScores(teams);
-
-  wrap.innerHTML = `
-    <article class="panel">
-      <div class="pill">${station.title}</div>
-      <h1 style="margin-top:.75rem">${station.subtitle}</h1>
-      <div class="tag tag-count" style="margin-top:.4rem">Count · Points = number of correct answers (max 20)</div>
-      <p style="margin-top:.75rem">Work through the True/False worksheet. Count correct answers and save for each team.</p>
-      <div class="field-grid" style="margin-top:1.25rem">
-        <div class="field full">
-          <label>Team</label>
-          <select id="count-team">
-            ${teams.map(t=>`<option value="${t.id}">${t.name}</option>`).join("")}
-          </select>
-        </div>
-        <div class="field full">
-          <label>Correct answers (0 – 20)</label>
-          <input type="number" id="count-val" min="0" max="20" value="0" />
-        </div>
-      </div>
-      <div class="btn-row" style="margin-top:.75rem">
-        <button class="btn btn-success" id="count-save">Save score</button>
-        <button class="btn btn-danger btn-soft" id="count-clear">Clear team's score</button>
-      </div>
-      <div class="sw-saved" id="count-msg"></div>
-    </article>
-    <article class="panel">
-      <div class="eyebrow">Current scores · Station 2</div>
-      <h2>False Witness leaderboard</h2>
-      <div class="lboard" id="lb-s2" style="margin-top:.75rem">
-        ${renderCountLeaderboard(teams, scores)}
-      </div>
-    </article>`;
-
+function wireCountStation() {
   document.getElementById("count-save").onclick = async () => {
     const teamId = document.getElementById("count-team").value;
     const val    = Number(document.getElementById("count-val").value||0);
@@ -635,58 +663,47 @@ function renderCountStation() {
   };
 }
 
-// ── Live leaderboard-only updates (no disruption to running stopwatch) ────────────────
-// Called on every Firestore snapshot to refresh just the scores panel
-function refreshStationLeaderboards() {
+// ── renderAll — called on EVERY Firestore snapshot on EVERY device ───────────
+// All lb-sX elements now exist in the static HTML, so this always works
+// regardless of which view the user is currently on.
+function renderAll() {
   const teams  = state.teams||[];
   const scores = computeScores(teams);
 
-  STATIONS.forEach(s => {
-    const lb = document.getElementById(`lb-${s.id}`);
-    if (!lb) return;
-    if (s.type==="timer")  lb.innerHTML = renderTimerLeaderboard(s, teams, scores);
-    if (s.type==="count")  lb.innerHTML = renderCountLeaderboard(teams, scores);
-  });
+  // Dashboard
+  renderSummary(teams, scores);
+  renderBreakdown(teams, scores);
+  renderLeaderboard("dashLeader", teams, scores, false);
+  renderLog();
+
+  // Projector
+  renderLeaderboard("projList", teams, scores, true);
+
+  // Finale cards (re-render without wiping onclick — handled via event delegation)
+  renderFinaleCards(teams);
+
+  // Station leaderboards — always present in DOM, always updated
+  const s1 = STATIONS[0], s3 = STATIONS[2], s4 = STATIONS[3];
+  document.getElementById("lb-s1").innerHTML = buildTimerLb(s1, teams, scores);
+  document.getElementById("lb-s2").innerHTML = buildCountLb(teams, scores);
+  document.getElementById("lb-s3").innerHTML = buildTimerLb(s3, teams, scores);
+  document.getElementById("lb-s4").innerHTML = buildTimerLb(s4, teams, scores);
 }
 
-// ── Finale ──────────────────────────────────────────────────────────────────
-function renderFinale() {
-  const teams = state.teams||[];
-  const el = document.getElementById("finaleCards");
-  if (!el) return;
-  el.innerHTML = teams.map(t=>`
-    <div class="finale-card ${t.finaleWinner?"winner":""}" data-tid="${t.id}">
-      <div class="team-nm">${t.name}</div>
-      <div class="pts-badge">${t.finaleWinner?"+"+FINALE_PTS+" pts 🏆":"—"}</div>
-    </div>`).join("");
-  el.querySelectorAll(".finale-card").forEach(card => {
-    card.onclick = async () => {
-      const tid = card.dataset.tid;
-      (state.teams||[]).forEach(t => { t.finaleWinner = t.id===tid; });
-      await saveState();
-      addLog(`Finale winner: ${(state.teams||[]).find(t=>t.id===tid)?.name}`);
-    };
-  });
-}
-
-// ── Leaderboard (dashboard + projector) ───────────────────────────────────────
-function renderLeaderboard(containerId, teams, scores, projector=false) {
-  const el = document.getElementById(containerId);
+// ── Dashboard helpers ─────────────────────────────────────────────────────────
+function renderLeaderboard(id, teams, scores, projector) {
+  const el = document.getElementById(id);
   if (!el) return;
   const sorted = [...teams].sort((a,b)=>scores[b.id].total-scores[a.id].total);
   el.innerHTML = sorted.map((t,i) => {
-    const s = scores[t.id];
-    const rankC = i===0?"r1":i===1?"r2":i===2?"r3":"";
-    const cls   = projector ? `proj-row ${i===0?"gold":""}` : `lrow ${i===0?"gold":""}`;
-    return `
-      <div class="${cls}">
-        <div class="rank ${rankC}">${i+1}</div>
-        <div>
-          <div class="team-name">${t.name}</div>
-          <div class="team-meta">S1 ${s.s1} · S2 ${s.s2} · S3 ${s.s3} · S4 ${s.s4} · Finale ${s.finale}</div>
-        </div>
-        <div class="team-pts">${s.total}</div>
-      </div>`;
+    const s=scores[t.id], rankC=i===0?"r1":i===1?"r2":i===2?"r3":"";
+    const cls = projector?`proj-row ${i===0?"gold":""}`:`lrow ${i===0?"gold":""}`;
+    return `<div class="${cls}">
+      <div class="rank ${rankC}">${i+1}</div>
+      <div><div class="team-name">${t.name}</div>
+      <div class="team-meta">S1 ${s.s1} · S2 ${s.s2} · S3 ${s.s3} · S4 ${s.s4} · Finale ${s.finale}</div></div>
+      <div class="team-pts">${s.total}</div>
+    </div>`;
   }).join("");
 }
 
@@ -694,26 +711,22 @@ function renderBreakdown(teams, scores) {
   const el = document.querySelector("#breakdownTable tbody");
   if (!el) return;
   const sorted = [...teams].sort((a,b)=>scores[b.id].total-scores[a.id].total);
-  el.innerHTML = `
-    <tr>
-      <th>Team</th><th>S1 Time</th><th>S1 Pts</th>
-      <th>S2 Correct</th><th>S2 Pts</th>
-      <th>S3 Time</th><th>S3 Pts</th>
-      <th>S4 Time</th><th>S4 Pts</th>
-      <th>Finale</th><th><strong>Total</strong></th>
-    </tr>
-    ${sorted.map(t=>{
-      const s=scores[t.id];
-      return `<tr>
-        <td><strong>${t.name}</strong></td>
-        <td class="time-cell">${fmtMs(t.s1Time)}</td><td>${s.s1||"—"}</td>
-        <td>${t.s2Correct??'—'}</td><td>${s.s2||"—"}</td>
-        <td class="time-cell">${fmtMs(t.s3Time)}</td><td>${s.s3||"—"}</td>
-        <td class="time-cell">${fmtMs(t.s4Time)}</td><td>${s.s4||"—"}</td>
-        <td>${t.finaleWinner?"🏆 +40":"—"}</td>
-        <td><strong>${s.total}</strong></td>
-      </tr>`;
-    }).join("")}`;
+  el.innerHTML = `<tr>
+    <th>Team</th><th>S1 Time</th><th>S1 Pts</th>
+    <th>S2 Correct</th><th>S2 Pts</th>
+    <th>S3 Time</th><th>S3 Pts</th>
+    <th>S4 Time</th><th>S4 Pts</th>
+    <th>Finale</th><th><strong>Total</strong></th>
+  </tr>
+  ${sorted.map(t=>{const s=scores[t.id];return `<tr>
+    <td><strong>${t.name}</strong></td>
+    <td class="time-cell">${fmtMs(t.s1Time)}</td><td>${s.s1||"—"}</td>
+    <td>${t.s2Correct??"—"}</td><td>${s.s2||"—"}</td>
+    <td class="time-cell">${fmtMs(t.s3Time)}</td><td>${s.s3||"—"}</td>
+    <td class="time-cell">${fmtMs(t.s4Time)}</td><td>${s.s4||"—"}</td>
+    <td>${t.finaleWinner?"🏆 +40":"—"}</td>
+    <td><strong>${s.total}</strong></td>
+  </tr>`;}).join("")}`;
 }
 
 function renderSummary(teams, scores) {
@@ -727,7 +740,7 @@ function renderSummary(teams, scores) {
     { label:"Leader",    value: leader?leader.name:"—" },
     { label:"Top score", value: leader?scores[leader.id].total:0 },
     { label:"Total pts", value: total },
-  ].map(c=>`<article class="panel"><div class="kpi-label">${c.label}</div><div class="kpi-value">${c.value}</div></article>`).join("");
+  ].map(c=>`<article class="panel"><div class="eyebrow">${c.label}</div><div style="font-size:1.8rem;font-weight:800;margin-top:.4rem;font-variant-numeric:tabular-nums">${c.value}</div></article>`).join("");
 }
 
 function renderLog() {
@@ -739,27 +752,26 @@ function renderLog() {
     : `<div class="log-item" style="color:var(--muted)">No updates yet.</div>`;
 }
 
-// ── Master render ──────────────────────────────────────────────────────────────
-// Called on every Firestore snapshot.
-// - Always updates dashboard, projector, leaderboard panels, log, finale.
-// - For station views: if the station HTML already exists (user has visited it),
-//   only refresh the leaderboard sub-panel so the running stopwatch is not disrupted.
-//   If the user hasn’t visited yet, it’s rendered fresh when they navigate there.
-function renderAll() {
-  const teams  = state.teams||[];
-  const scores = computeScores(teams);
-
-  // Dashboard + projector
-  renderSummary(teams, scores);
-  renderBreakdown(teams, scores);
-  renderLeaderboard("dashLeader", teams, scores);
-  renderLeaderboard("projList",   teams, scores, true);
-  renderLog();
-  renderFinale();
-
-  // Station leaderboard panels — live-update scores without touching stopwatch controls
-  refreshStationLeaderboards();
+// ── Finale ────────────────────────────────────────────────────────────────────
+function renderFinaleCards(teams) {
+  const el = document.getElementById("finaleCards");
+  if (!el) return;
+  el.innerHTML = teams.map(t=>`
+    <div class="finale-card ${t.finaleWinner?"winner":""}" data-tid="${t.id}">
+      <div class="team-nm">${t.name}</div>
+      <div class="pts-badge">${t.finaleWinner?"+"+FINALE_PTS+" pts 🏆":"—"}</div>
+    </div>`).join("");
 }
+
+// Event delegation — survives innerHTML re-renders
+document.getElementById("finaleCards").addEventListener("click", async e => {
+  const card = e.target.closest(".finale-card");
+  if (!card) return;
+  const tid = card.dataset.tid;
+  (state.teams||[]).forEach(t => { t.finaleWinner = t.id===tid; });
+  await saveState();
+  addLog(`Finale winner: ${(state.teams||[]).find(t=>t.id===tid)?.name}`);
+});
 
 // ── Clock tick ────────────────────────────────────────────────────────────────
 setInterval(() => {
@@ -770,20 +782,14 @@ setInterval(() => {
   if (pc) pc.textContent = t;
 }, 500);
 
-// ── Navigation ─────────────────────────────────────────────────────────────────
+// ── Navigation ────────────────────────────────────────────────────────────────
 function setView(vid) {
   document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active", v.id===`v-${vid}`));
   document.querySelectorAll(".chip").forEach(c=>c.classList.toggle("active", c.dataset.v===vid));
   location.hash = vid;
-  const s = STATIONS.find(s=>s.id===vid);
-  if (s) {
-    // Full render on first visit; thereafter refreshStationLeaderboards handles live updates
-    if (s.type==="timer") renderTimerStation(s);
-    else if (s.type==="count") renderCountStation();
-  }
-  if (vid==="finale") renderFinale();
 }
 document.querySelectorAll(".chip[data-v]").forEach(c=>c.addEventListener("click",()=>setView(c.dataset.v)));
+window.addEventListener("hashchange", () => setView(location.hash.replace("#","")||"dashboard"));
 
 // ── Buttons ──────────────────────────────────────────────────────────────────
 document.getElementById("gStart").onclick = ()=>globalTimerOp("start");
@@ -810,28 +816,33 @@ document.getElementById("themeBtn").onclick = () => {
   document.documentElement.setAttribute("data-theme", next);
 };
 
-window.addEventListener("hashchange", () => {
-  const h = location.hash.replace("#","")||"dashboard";
-  setView(h);
-});
-
-// ── Firestore subscription ─────────────────────────────────────────────────────
+// ── Firestore subscription ────────────────────────────────────────────────────
 onSnapshot(docRef, snap => {
   if (!snap.exists()) { setDoc(docRef, makeDefault()); return; }
   state = snap.data();
+  populateSelects(state.teams||[]);
   renderAll();
 }, err => {
   document.getElementById("connectionStatus").textContent = "Error";
   console.error(err);
 });
 
+// ── Init ──────────────────────────────────────────────────────────────────────
 (async () => {
   const snap = await getDoc(docRef);
   if (!snap.exists()) await setDoc(docRef, makeDefault());
   else state = snap.data();
+
+  populateSelects(state.teams||[]);
+
+  // Wire controls once — these never get torn down
+  wireTimerStation("s1");
+  wireTimerStation("s3");
+  wireTimerStation("s4");
+  wireCountStation();
+
   renderAll();
-  const h = location.hash.replace("#","")||"dashboard";
-  setView(h);
+  setView(location.hash.replace("#","")||"dashboard");
 })();
 </script>
 </body>
