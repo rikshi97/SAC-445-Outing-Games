@@ -291,7 +291,7 @@
       <article class="panel">
         <div class="eyebrow">Finale · Morse Code / Emoji Cipher</div>
         <h1>Pick the winning team</h1>
-        <p style="margin-top:.5rem">The team that first deciphers the code and reads Jeremiah 29:13 gets <strong>+40 points</strong>.</p>
+        <p style="margin-top:.5rem">The first team to decipher the code gets <strong>+40 points</strong>.</p>
         <div class="finale-cards" id="finaleCards" style="margin-top:1.25rem"></div>
         <div class="btn-row" style="margin-top:1rem">
           <button class="btn btn-danger btn-soft" id="btnClearFinale">Clear finale winner</button>
@@ -461,15 +461,12 @@ function swElapsed(sid) {
   return sw.accumulated + (sw.running ? Date.now() - sw.startMs : 0);
 }
 
-// Update the Start/Stop button label & style to reflect current running state
 function swSyncBtn(sid) {
   const btn = document.getElementById(`sw-start-${sid}`);
   if (!btn) return;
   const running = localSW[sid]?.running;
   btn.textContent = running ? "⏹ Stop" : "▶ Start";
-  btn.className   = running
-    ? "btn btn-danger"
-    : "btn btn-primary";
+  btn.className   = running ? "btn btn-danger" : "btn btn-primary";
 }
 
 function swStart(sid) {
@@ -504,7 +501,6 @@ function swReset(sid) {
   swSyncBtn(sid);
 }
 
-// Toggle: if running → stop; if stopped → start
 function swToggle(sid) {
   if (localSW[sid]?.running) swPause(sid);
   else swStart(sid);
@@ -580,16 +576,10 @@ function renderTimerStation(station) {
     </article>
   `;
 
-  // Start/Stop toggle
   document.getElementById(`sw-start-${station.id}`).onclick = () => swToggle(station.id);
-
-  // Reset button
   document.getElementById(`sw-reset-${station.id}`).onclick = () => swReset(station.id);
-
-  // Team dropdown → reset timer when team changes
   document.getElementById(`sw-team-${station.id}`).onchange = () => swReset(station.id);
 
-  // Save time
   document.getElementById(`sw-save-${station.id}`).onclick = async () => {
     const teamId  = document.getElementById(`sw-team-${station.id}`).value;
     const elapsed = swElapsed(station.id);
@@ -603,7 +593,6 @@ function renderTimerStation(station) {
     if (msg) { msg.textContent = `Saved ${team.name}: ${fmtMs(elapsed)}`; msg.classList.add("show"); }
   };
 
-  // Clear time
   document.getElementById(`sw-clear-${station.id}`).onclick = async () => {
     const teamId = document.getElementById(`sw-team-${station.id}`).value;
     const team   = (state.teams||[]).find(t=>t.id===teamId);
