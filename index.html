@@ -80,9 +80,17 @@
     .field{display:grid;gap:.4rem}
     .field.full{grid-column:1/-1}
     label{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
-    select,input[type="number"],input[type="text"]{
+    input[type="number"],input[type="text"]{
       width:100%;min-height:48px;border-radius:var(--r-md);border:1px solid var(--border);
       background:var(--surface2);padding:.75rem .9rem;color:var(--text)}
+
+    /* ── Team picker pills ── */
+    .team-picker{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.5rem}
+    .team-pick-btn{border:2px solid var(--border);background:var(--surface2);color:var(--text);
+      padding:.6rem 1.1rem;border-radius:var(--r-full);min-height:44px;font-weight:600;
+      transition:all var(--tr);white-space:nowrap}
+    .team-pick-btn:hover{border-color:var(--primary);background:var(--primary-hl)}
+    .team-pick-btn.selected{border-color:var(--primary);background:var(--primary);color:#fff}
 
     .sw-wrap{display:grid;gap:1rem}
     .sw-display{font-size:clamp(2.8rem,10vw,5rem);font-weight:900;font-variant-numeric:tabular-nums;
@@ -253,11 +261,9 @@
               <button class="btn btn-warn" id="sw-reset-s1">↺ Reset</button>
             </div>
           </div>
-          <div class="field-grid" style="margin-top:1.25rem">
-            <div class="field full">
-              <label>Team to save time for</label>
-              <select id="sw-team-s1"></select>
-            </div>
+          <div style="margin-top:1.25rem">
+            <div class="eyebrow">Team to save time for</div>
+            <div class="team-picker" id="team-pick-s1"></div>
           </div>
           <div class="btn-row" style="margin-top:.75rem">
             <button class="btn btn-success" id="sw-save-s1">Save time for team</button>
@@ -281,11 +287,11 @@
           <h1 style="margin-top:.75rem">False Witness</h1>
           <div class="tag tag-count" style="margin-top:.4rem">Count · Points = number of correct answers (max 20)</div>
           <p style="margin-top:.75rem">Work through the True/False worksheet. Count correct answers and save for each team.</p>
-          <div class="field-grid" style="margin-top:1.25rem">
-            <div class="field full">
-              <label>Team</label>
-              <select id="count-team"></select>
-            </div>
+          <div style="margin-top:1.25rem">
+            <div class="eyebrow">Team</div>
+            <div class="team-picker" id="team-pick-s2"></div>
+          </div>
+          <div class="field-grid" style="margin-top:.75rem">
             <div class="field full">
               <label>Correct answers (0 – 20)</label>
               <input type="number" id="count-val" min="0" max="20" value="0" />
@@ -322,11 +328,9 @@
               <button class="btn btn-warn" id="sw-reset-s3">↺ Reset</button>
             </div>
           </div>
-          <div class="field-grid" style="margin-top:1.25rem">
-            <div class="field full">
-              <label>Team to save time for</label>
-              <select id="sw-team-s3"></select>
-            </div>
+          <div style="margin-top:1.25rem">
+            <div class="eyebrow">Team to save time for</div>
+            <div class="team-picker" id="team-pick-s3"></div>
           </div>
           <div class="btn-row" style="margin-top:.75rem">
             <button class="btn btn-success" id="sw-save-s3">Save time for team</button>
@@ -359,11 +363,9 @@
               <button class="btn btn-warn" id="sw-reset-s4">↺ Reset</button>
             </div>
           </div>
-          <div class="field-grid" style="margin-top:1.25rem">
-            <div class="field full">
-              <label>Team to save time for</label>
-              <select id="sw-team-s4"></select>
-            </div>
+          <div style="margin-top:1.25rem">
+            <div class="eyebrow">Team to save time for</div>
+            <div class="team-picker" id="team-pick-s4"></div>
           </div>
           <div class="btn-row" style="margin-top:.75rem">
             <button class="btn btn-success" id="sw-save-s4">Save time for team</button>
@@ -459,7 +461,43 @@ let state    = makeDefault();
 document.getElementById("alertConfig").style.display = "none";
 document.getElementById("connectionStatus").textContent = "Live";
 
-// ── Scoring ──────────────────────────────────────────────────────────────────
+// ── Selected team per station (replaces dropdowns entirely) ───────────────────
+// Keys: "s1","s2","s3","s4" — values: team id string or null
+const selectedTeam = { s1:null, s2:null, s3:null, s4:null };
+
+function getSelectedTeam(sid) { return selectedTeam[sid] ?? null; }
+
+function setSelectedTeam(sid, tid) {
+  // Reset stopwatch when switching teams (only for timer stations)
+  if (STATIONS.find(s=>s.id===sid)?.type === "timer" && selectedTeam[sid] !== tid) {
+    swReset(sid);
+  }
+  selectedTeam[sid] = tid;
+  renderTeamPicker(sid, state.teams || []);
+}
+
+// Render tap-to-select pill buttons for a station.
+// Called from renderAll() so it always reflects latest teams from Firestore.
+function renderTeamPicker(sid, teams) {
+  const el = document.getElementById(`team-pick-${sid}`);
+  if (!el) return;
+  const current = selectedTeam[sid];
+  // Auto-select first team if nothing selected yet and teams exist
+  if (!current && teams.length) selectedTeam[sid] = teams[0].id;
+  el.innerHTML = teams.map(t => `
+    <button class="team-pick-btn ${selectedTeam[sid] === t.id ? "selected" : ""}"
+            data-sid="${sid}" data-tid="${t.id}">${t.name}</button>
+  `).join("");
+}
+
+// Single delegated listener on main for all team-pick-btn clicks
+document.querySelector(".main").addEventListener("click", e => {
+  const btn = e.target.closest(".team-pick-btn");
+  if (!btn) return;
+  setSelectedTeam(btn.dataset.sid, btn.dataset.tid);
+});
+
+// ── Scoring ───────────────────────────────────────────────────────────────────
 function rankPoints(station, teams) {
   const pts = {};
   teams.forEach(t => pts[t.id] = 0);
@@ -487,7 +525,7 @@ function computeScores(teams) {
   return all;
 }
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 function fmtMs(ms) {
   if (ms == null) return "—";
   const s = Math.floor(ms/1000), m = Math.floor(s/60), sec = s%60;
@@ -517,7 +555,7 @@ async function globalTimerOp(op) {
   addLog("Global timer: " + op);
 }
 
-// ── Log / persist ──────────────────────────────────────────────────────────────
+// ── Log / persist ─────────────────────────────────────────────────────────────
 async function addLog(msg) {
   const logs = (state.logs||[]).slice(0,14);
   logs.unshift({ msg, time: new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}) });
@@ -528,7 +566,7 @@ async function saveState() {
   await setDoc(docRef, state, { merge:true });
 }
 
-// ── Local stopwatch state ──────────────────────────────────────────────────────
+// ── Local stopwatch state ─────────────────────────────────────────────────────
 const localSW = {};
 STATIONS.filter(s=>s.type==="timer").forEach(s => {
   localSW[s.id] = { running:false, startMs:0, accumulated:0, intervalId:null };
@@ -566,6 +604,7 @@ function swPause(sid) {
 }
 function swReset(sid) {
   const sw = localSW[sid];
+  if (!sw) return;
   clearInterval(sw.intervalId);
   sw.running = false; sw.accumulated = 0; sw.startMs = 0;
   const el = document.getElementById(`sw-${sid}`);
@@ -574,7 +613,7 @@ function swReset(sid) {
 }
 function swToggle(sid) { localSW[sid]?.running ? swPause(sid) : swStart(sid); }
 
-// ── Leaderboard HTML builders ────────────────────────────────────────────────
+// ── Leaderboard HTML builders ─────────────────────────────────────────────────
 function buildTimerLb(station, teams, scores) {
   const timeKey = `${station.id}Time`;
   return teams.slice().sort((a,b) => {
@@ -605,29 +644,14 @@ function buildCountLb(teams, scores) {
   }).join("");
 }
 
-// ── Populate team dropdowns ────────────────────────────────────────────────────
-// Sets innerHTML WITHOUT triggering change events by using Option objects.
-function populateSelects(teams) {
-  const selectIds = ["sw-team-s1", "sw-team-s3", "sw-team-s4", "count-team"];
-  selectIds.forEach(id => {
-    const el = document.getElementById(id);
-    if (!el || el.dataset.populated) return;
-    // Use Option() constructor — does NOT fire change events
-    teams.forEach(t => el.add(new Option(t.name, t.id)));
-    el.dataset.populated = "1";
-  });
-}
-
-// ── Wire station controls (once, after selects are populated) ──────────────────
+// ── Wire station controls (called once at init — no selects to worry about) ───
 function wireTimerStation(sid) {
   document.getElementById(`sw-start-${sid}`).addEventListener("click", () => swToggle(sid));
   document.getElementById(`sw-reset-${sid}`).addEventListener("click", () => swReset(sid));
-  // Only reset stopwatch when user manually picks a different team
-  document.getElementById(`sw-team-${sid}`).addEventListener("change", () => swReset(sid));
 
   const timeKey = `${sid}Time`;
   document.getElementById(`sw-save-${sid}`).addEventListener("click", async () => {
-    const teamId  = document.getElementById(`sw-team-${sid}`).value;
+    const teamId  = getSelectedTeam(sid);
     const elapsed = swElapsed(sid);
     if (!teamId || elapsed === 0) return;
     swPause(sid);
@@ -641,7 +665,7 @@ function wireTimerStation(sid) {
   });
 
   document.getElementById(`sw-clear-${sid}`).addEventListener("click", async () => {
-    const teamId = document.getElementById(`sw-team-${sid}`).value;
+    const teamId = getSelectedTeam(sid);
     const team   = (state.teams||[]).find(t => t.id === teamId);
     if (!team) return;
     team[timeKey] = null;
@@ -652,7 +676,7 @@ function wireTimerStation(sid) {
 
 function wireCountStation() {
   document.getElementById("count-save").addEventListener("click", async () => {
-    const teamId = document.getElementById("count-team").value;
+    const teamId = getSelectedTeam("s2");
     const val    = Number(document.getElementById("count-val").value || 0);
     const team   = (state.teams||[]).find(t => t.id === teamId);
     if (!team) return;
@@ -664,7 +688,7 @@ function wireCountStation() {
   });
 
   document.getElementById("count-clear").addEventListener("click", async () => {
-    const teamId = document.getElementById("count-team").value;
+    const teamId = getSelectedTeam("s2");
     const team   = (state.teams||[]).find(t => t.id === teamId);
     if (!team) return;
     team.s2Correct = null;
@@ -673,10 +697,13 @@ function wireCountStation() {
   });
 }
 
-// ── renderAll — called on every Firestore snapshot, every device ─────────────────
+// ── renderAll — called on every Firestore snapshot ────────────────────────────
 function renderAll() {
   const teams  = state.teams || [];
   const scores = computeScores(teams);
+
+  // Render team pickers for all stations (safe to call every time — no races)
+  ["s1","s2","s3","s4"].forEach(sid => renderTeamPicker(sid, teams));
 
   renderSummary(teams, scores);
   renderBreakdown(teams, scores);
@@ -685,7 +712,6 @@ function renderAll() {
   renderLog();
   renderFinaleCards(teams);
 
-  // Station leaderboards — always in DOM, always updated regardless of active view
   document.getElementById("lb-s1").innerHTML = buildTimerLb(STATIONS[0], teams, scores);
   document.getElementById("lb-s2").innerHTML = buildCountLb(teams, scores);
   document.getElementById("lb-s3").innerHTML = buildTimerLb(STATIONS[2], teams, scores);
@@ -792,7 +818,7 @@ function setView(vid) {
 document.querySelectorAll(".chip[data-v]").forEach(c => c.addEventListener("click", () => setView(c.dataset.v)));
 window.addEventListener("hashchange", () => setView(location.hash.replace("#", "") || "dashboard"));
 
-// ── Buttons ──────────────────────────────────────────────────────────────────
+// ── Buttons ───────────────────────────────────────────────────────────────────
 document.getElementById("gStart").onclick = () => globalTimerOp("start");
 document.getElementById("gPause").onclick = () => globalTimerOp("pause");
 document.getElementById("gReset").onclick = () => globalTimerOp("reset");
@@ -833,10 +859,7 @@ onSnapshot(docRef, snap => {
   if (!snap.exists()) await setDoc(docRef, makeDefault());
   else state = snap.data();
 
-  // 1. Populate selects first (uses Option() constructor — no change events fired)
-  populateSelects(state.teams || []);
-
-  // 2. Wire controls AFTER selects are populated, so no spurious change fires
+  // Wire controls — no selects, no population race possible
   wireTimerStation("s1");
   wireTimerStation("s3");
   wireTimerStation("s4");
