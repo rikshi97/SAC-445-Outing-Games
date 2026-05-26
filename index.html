@@ -336,7 +336,6 @@ const firebaseConfig = {
   messagingSenderId: "983127575591",
   appId: "1:983127575591:web:a0798ec5df85c75104d202"
 };
-// ─────────────────────────────────────────────────────────────────────────────
 
 // ── Station config ───────────────────────────────────────────────────────────
 const STATIONS = [
@@ -354,7 +353,6 @@ const DEFAULT_TEAMS = [
   { id:"t4", name:"John" },
 ];
 
-// ── Default Firestore document ───────────────────────────────────────────────
 function makeDefault() {
   return {
     teams: DEFAULT_TEAMS.map(t => ({
@@ -380,17 +378,13 @@ document.getElementById("connectionStatus").textContent = "Live";
 function rankPoints(station, teams) {
   const pts = {};
   teams.forEach(t => pts[t.id] = 0);
-
   if (station.type === "timer") {
     const filed = teams
       .filter(t => t[`${station.id}Time`] != null)
       .sort((a,b) => a[`${station.id}Time`] - b[`${station.id}Time`]);
     filed.forEach((t, i) => { pts[t.id] = station.rankPts[i] ?? 0; });
-
   } else if (station.type === "count") {
-    teams.forEach(t => {
-      pts[t.id] = t.s2Correct != null ? Math.round(t.s2Correct) : 0;
-    });
+    teams.forEach(t => { pts[t.id] = t.s2Correct != null ? Math.round(t.s2Correct) : 0; });
   }
   return pts;
 }
@@ -398,18 +392,13 @@ function rankPoints(station, teams) {
 function computeScores(teams) {
   const all = {};
   teams.forEach(t => { all[t.id] = { s1:0, s2:0, s3:0, s4:0, finale:0 }; });
-
   STATIONS.forEach(s => {
     const pts = rankPoints(s, teams);
-    const key = s.id;
-    teams.forEach(t => { all[t.id][key] = pts[t.id]; });
+    teams.forEach(t => { all[t.id][s.id] = pts[t.id]; });
   });
-
   teams.forEach(t => { all[t.id].finale = t.finaleWinner ? FINALE_PTS : 0; });
-
   teams.forEach(t => {
-    all[t.id].total =
-      all[t.id].s1 + all[t.id].s2 + all[t.id].s3 + all[t.id].s4 + all[t.id].finale;
+    all[t.id].total = all[t.id].s1 + all[t.id].s2 + all[t.id].s3 + all[t.id].s4 + all[t.id].finale;
   });
   return all;
 }
@@ -456,12 +445,11 @@ async function addLog(msg) {
   await updateDoc(docRef, { logs }).catch(()=>{});
 }
 
-// ── Persist state ──────────────────────────────────────────────────────────────
 async function saveState() {
   await setDoc(docRef, state, { merge:true });
 }
 
-// ── Per-station stopwatch state (local, not Firestore) ─────────────────────────
+// ── Per-station stopwatch state (local) ───────────────────────────────────────
 const localSW = {};
 STATIONS.filter(s => s.type === "timer").forEach(s => {
   localSW[s.id] = { running:false, startMs:0, accumulated:0, intervalId:null };
@@ -473,6 +461,17 @@ function swElapsed(sid) {
   return sw.accumulated + (sw.running ? Date.now() - sw.startMs : 0);
 }
 
+// Update the Start/Stop button label & style to reflect current running state
+function swSyncBtn(sid) {
+  const btn = document.getElementById(`sw-start-${sid}`);
+  if (!btn) return;
+  const running = localSW[sid]?.running;
+  btn.textContent = running ? "⏹ Stop" : "▶ Start";
+  btn.className   = running
+    ? "btn btn-danger"
+    : "btn btn-primary";
+}
+
 function swStart(sid) {
   const sw = localSW[sid];
   if (sw.running) return;
@@ -482,6 +481,7 @@ function swStart(sid) {
     const el = document.getElementById(`sw-${sid}`);
     if (el) el.textContent = fmtMs(swElapsed(sid));
   }, 100);
+  swSyncBtn(sid);
 }
 
 function swPause(sid) {
@@ -490,6 +490,7 @@ function swPause(sid) {
   sw.accumulated += Date.now() - sw.startMs;
   sw.running = false;
   clearInterval(sw.intervalId);
+  swSyncBtn(sid);
 }
 
 function swReset(sid) {
@@ -500,16 +501,24 @@ function swReset(sid) {
   sw.startMs = 0;
   const el = document.getElementById(`sw-${sid}`);
   if (el) el.textContent = "00:00.0";
+  swSyncBtn(sid);
+}
+
+// Toggle: if running → stop; if stopped → start
+function swToggle(sid) {
+  if (localSW[sid]?.running) swPause(sid);
+  else swStart(sid);
 }
 
 // ── Render: station view (timer) ───────────────────────────────────────────────
 function renderTimerStation(station) {
   const wrap = document.getElementById(`sg-${station.id}`);
   if (!wrap) return;
-  const scores = computeScores(state.teams || []);
-  const teams  = state.teams || [];
-  const sw     = localSW[station.id];
+  const scores  = computeScores(state.teams || []);
+  const teams   = state.teams || [];
+  const sw      = localSW[station.id];
   const timeKey = `${station.id}Time`;
+  const running = sw?.running;
 
   wrap.innerHTML = `
     <article class="panel">
@@ -523,9 +532,8 @@ function renderTimerStation(station) {
           <div class="sw-display" id="sw-${station.id}">${fmtMs(sw ? sw.accumulated : 0)}</div>
         </div>
         <div class="btn-row">
-          <button class="btn btn-primary" id="sw-start-${station.id}">▶ Start</button>
-          <button class="btn btn-soft"    id="sw-pause-${station.id}">⏸ Pause</button>
-          <button class="btn btn-warn"    id="sw-reset-${station.id}">↺ Reset</button>
+          <button class="btn ${running ? 'btn-danger' : 'btn-primary'}" id="sw-start-${station.id}">${running ? '⏹ Stop' : '▶ Start'}</button>
+          <button class="btn btn-warn" id="sw-reset-${station.id}">↺ Reset</button>
         </div>
       </div>
 
@@ -559,7 +567,7 @@ function renderTimerStation(station) {
           const pts   = scores[t.id]?.[station.id] ?? 0;
           const rankC = i===0?"r1":i===1?"r2":i===2?"r3":"";
           return `
-          <div class="lrow ${i===0?"gold":""}">
+          <div class="lrow ${i===0?'gold':''}">
             <div class="rank ${rankC}">${i+1}</div>
             <div>
               <div class="team-name">${t.name}</div>
@@ -572,10 +580,16 @@ function renderTimerStation(station) {
     </article>
   `;
 
-  document.getElementById(`sw-start-${station.id}`).onclick = () => swStart(station.id);
-  document.getElementById(`sw-pause-${station.id}`).onclick = () => swPause(station.id);
+  // Start/Stop toggle
+  document.getElementById(`sw-start-${station.id}`).onclick = () => swToggle(station.id);
+
+  // Reset button
   document.getElementById(`sw-reset-${station.id}`).onclick = () => swReset(station.id);
 
+  // Team dropdown → reset timer when team changes
+  document.getElementById(`sw-team-${station.id}`).onchange = () => swReset(station.id);
+
+  // Save time
   document.getElementById(`sw-save-${station.id}`).onclick = async () => {
     const teamId  = document.getElementById(`sw-team-${station.id}`).value;
     const elapsed = swElapsed(station.id);
@@ -589,6 +603,7 @@ function renderTimerStation(station) {
     if (msg) { msg.textContent = `Saved ${team.name}: ${fmtMs(elapsed)}`; msg.classList.add("show"); }
   };
 
+  // Clear time
   document.getElementById(`sw-clear-${station.id}`).onclick = async () => {
     const teamId = document.getElementById(`sw-team-${station.id}`).value;
     const team   = (state.teams||[]).find(t=>t.id===teamId);
@@ -641,7 +656,7 @@ function renderCountStation() {
           const pts = scores[t.id]?.s2 ?? 0;
           const rankC = i===0?"r1":i===1?"r2":i===2?"r3":"";
           return `
-          <div class="lrow ${i===0?"gold":""}">
+          <div class="lrow ${i===0?'gold':''}">
             <div class="rank ${rankC}">${i+1}</div>
             <div>
               <div class="team-name">${t.name}</div>
@@ -687,7 +702,6 @@ function renderFinale() {
       <div class="pts-badge">${t.finaleWinner ? "+"+FINALE_PTS+" pts 🏆" : "—"}</div>
     </div>
   `).join("");
-
   el.querySelectorAll(".finale-card").forEach(card => {
     card.onclick = async () => {
       const tid = card.dataset.tid;
@@ -706,16 +720,9 @@ function renderLeaderboard(containerId, teams, scores, projector=false) {
   el.innerHTML = sorted.map((t,i) => {
     const s = scores[t.id];
     const rankC = i===0?"r1":i===1?"r2":i===2?"r3":"";
-    return projector ? `
-      <div class="proj-row ${i===0?"gold":""}">
-        <div class="rank ${rankC}">${i+1}</div>
-        <div>
-          <div class="team-name">${t.name}</div>
-          <div class="team-meta">S1 ${s.s1} · S2 ${s.s2} · S3 ${s.s3} · S4 ${s.s4} · Finale ${s.finale}</div>
-        </div>
-        <div class="team-pts">${s.total}</div>
-      </div>` : `
-      <div class="lrow ${i===0?"gold":""}">
+    const rowClass = projector ? `proj-row ${i===0?"gold":""}` : `lrow ${i===0?"gold":""}`;
+    return `
+      <div class="${rowClass}">
         <div class="rank ${rankC}">${i+1}</div>
         <div>
           <div class="team-name">${t.name}</div>
@@ -793,14 +800,12 @@ function renderLog() {
 function renderAll() {
   const teams  = state.teams || [];
   const scores = computeScores(teams);
-
   renderSummary(teams, scores);
   renderBreakdown(teams, scores);
   renderLeaderboard("dashLeader", teams, scores);
   renderLeaderboard("projList",   teams, scores, true);
   renderLog();
   renderFinale();
-
   const activeView = document.querySelector(".view.active");
   if (activeView) {
     const vid = activeView.id;
@@ -825,7 +830,6 @@ function setView(vid) {
   document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active", v.id===`v-${vid}`));
   document.querySelectorAll(".chip").forEach(c=>c.classList.toggle("active", c.dataset.v===vid));
   location.hash = vid;
-
   const s = STATIONS.find(s=>s.id===vid);
   if (s) {
     if (s.type === "timer") renderTimerStation(s);
@@ -874,10 +878,7 @@ window.addEventListener("hashchange", ()=>{
 
 // ── Firestore subscription ─────────────────────────────────────────────────────
 onSnapshot(docRef, snap => {
-  if (!snap.exists()) {
-    setDoc(docRef, makeDefault());
-    return;
-  }
+  if (!snap.exists()) { setDoc(docRef, makeDefault()); return; }
   state = snap.data();
   renderAll();
 }, err => {
